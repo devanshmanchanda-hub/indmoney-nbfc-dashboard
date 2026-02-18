@@ -5,7 +5,7 @@ const buildVintageCurve = (start, growth) =>
 
 // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
-  meta: { companyName: "FinServe NBFC Ltd", reportDate: "Feb 2026" },
+  meta: { companyName: "INDmoney NBFC Ltd", reportDate: "Feb 2026" },
   portfolio: {
     totalAUM: 4820.5, totalAUMGrowth: 18.4,
     disbursed: 1240.2, disbursedGrowth: 22.1,
