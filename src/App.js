@@ -816,6 +816,47 @@ export default function App() {
                 );
               })}
             </Panel>
+
+            <Panel title="Collections Month-wise Table" subtitle="Monthly disbursal, bounce, bucket, and contactability view" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:980 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {[
+                        "Month",
+                        "Disbursal Amount",
+                        "FEMI % (First Bounce)",
+                        "Current POS",
+                        "Currently Bucket X (Users in DPD 1-30)",
+                        "Currently Bucket 1 (Users in DPD 31-60)",
+                        "Currently Bucket 2 (Users in DPD 61-90)",
+                        "Currently Bucket 3 (Users in DPD 90+)",
+                        "Contactability %",
+                      ].map(h => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.collectionsMonthly.map((row, i) => (
+                      <tr key={row.month} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"10px 12px", color: theme.text, fontWeight:600 }}>
+                          <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:12, fontWeight:600 }} />
+                        </td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.disbursal} onChange={v=>update(`collectionsMonthly[${i}].disbursal`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.femi} onChange={v=>update(`collectionsMonthly[${i}].femi`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.currentPOS} onChange={v=>update(`collectionsMonthly[${i}].currentPOS`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucketX} onChange={v=>update(`collectionsMonthly[${i}].bucketX`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket1} onChange={v=>update(`collectionsMonthly[${i}].bucket1`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket2} onChange={v=>update(`collectionsMonthly[${i}].bucket2`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket3} onChange={v=>update(`collectionsMonthly[${i}].bucket3`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.contactability} onChange={v=>update(`collectionsMonthly[${i}].contactability`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
           </div>
         )}
 
