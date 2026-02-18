@@ -141,10 +141,18 @@ const DEFAULT_DATA = {
     debtEquity: 4.8, borrowingCost: 9.2,
     bankLines: 42.6, ncd: 38.2, ecb: 10.8, cp: 8.4,
   },
+  callingFeedback: [
+    { userId: "U100231", agent: "Ritika Sharma", calledAt: "2026-02-10 11:12", response: "PTP", timesCalled: 3, currentMaxDpd: 32, amountOverdue: 8200, totalAmountOs: 63400 },
+    { userId: "U100498", agent: "Vikas Mehta", calledAt: "2026-02-10 12:46", response: "RNR", timesCalled: 5, currentMaxDpd: 58, amountOverdue: 15750, totalAmountOs: 90200 },
+    { userId: "U100774", agent: "Aman Verma", calledAt: "2026-02-10 14:09", response: "Paid", timesCalled: 2, currentMaxDpd: 14, amountOverdue: 0, totalAmountOs: 41800 },
+    { userId: "U101023", agent: "Ritika Sharma", calledAt: "2026-02-10 16:31", response: "PTP", timesCalled: 4, currentMaxDpd: 46, amountOverdue: 12600, totalAmountOs: 77100 },
+    { userId: "U101447", agent: "Neha Soni", calledAt: "2026-02-11 10:03", response: "RNR", timesCalled: 6, currentMaxDpd: 73, amountOverdue: 19300, totalAmountOs: 110800 },
+    { userId: "U101908", agent: "Vikas Mehta", calledAt: "2026-02-11 11:28", response: "Paid", timesCalled: 1, currentMaxDpd: 9, amountOverdue: 0, totalAmountOs: 36700 },
+  ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
     agingBucket: true, profitability: true, creditQuality: true,
-    collections: true, liquidity: true,
+    collections: true, liquidity: true, callingFeedback: true,
   },
   selectedLender: "ALL", // ALL / CS / IDFC / InCred
 };
@@ -353,7 +361,8 @@ export default function App() {
 
   const pv   = data.panelVisibility;
   const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
-  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
+  const callingFeedbackRows = data.callingFeedback || DEFAULT_DATA.callingFeedback || [];
+  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity","Calling feedback"];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -1117,6 +1126,74 @@ export default function App() {
                   );
                 })}
               </Panel>
+            </div>
+          </div>
+        )}
+
+
+        {/* ══════════════════════════════════════════════
+            TAB 5 — CALLING FEEDBACK
+        ══════════════════════════════════════════════ */}
+        {activeTab === 5 && (pv.callingFeedback ?? true) && (
+          <div>
+            <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1300 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {[
+                        "User ID",
+                        "Agent called",
+                        "Calling date and time",
+                        "User response (RNR / PTP / Paid)",
+                        "No. of times called",
+                        "Current max DPD",
+                        "Amount overdue (₹)",
+                        "Total amount O/S (₹)",
+                      ].map((h) => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {callingFeedbackRows.map((row, i) => {
+                      const responseColor = row.response === "Paid" ? theme.accent : row.response === "PTP" ? "#F59E0B" : "#EF4444";
+                      const timesCalled = row.timesCalled ?? 0;
+                      const currentMaxDpd = row.currentMaxDpd ?? 0;
+                      const amountOverdue = row.amountOverdue ?? 0;
+                      const totalAmountOs = row.totalAmountOs ?? 0;
+                      return (
+                        <tr key={`${row.userId}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                          <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.userId}</td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>{row.agent}</td>
+                          <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>{row.calledAt}</td>
+                          <td style={{ padding:"12px" }}>
+                            <span style={{ background:`${responseColor}22`, color: responseColor, padding:"4px 10px", borderRadius:999, fontSize:11, fontWeight:700 }}>{row.response}</span>
+                          </td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>{timesCalled}</td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>{currentMaxDpd}</td>
+                          <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>₹{amountOverdue.toLocaleString()}</td>
+                          <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>₹{totalAmountOs.toLocaleString()}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginTop:14 }}>
+              {[
+                { label:"Total Calls", value: callingFeedbackRows.length, color: theme.accent2, suffix: "" },
+                { label:"PTP", value: callingFeedbackRows.filter(r => r.response === "PTP").length, color: "#F59E0B", suffix: "" },
+                { label:"Paid", value: callingFeedbackRows.filter(r => r.response === "Paid").length, color: theme.accent, suffix: "" },
+                { label:"RNR", value: callingFeedbackRows.filter(r => r.response === "RNR").length, color: "#EF4444", suffix: "" },
+              ].map((k, i) => (
+                <div key={i} style={{ background: theme.card, border:`1px solid ${k.color}33`, borderRadius:12, padding:"14px 16px" }}>
+                  <div style={{ fontSize:10, color: theme.subtext, textTransform:"uppercase", letterSpacing:"0.06em", fontWeight:700 }}>{k.label}</div>
+                  <div style={{ fontSize:24, fontWeight:800, color: k.color, marginTop:6 }}>{k.value}{k.suffix}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}
