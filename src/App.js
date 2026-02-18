@@ -142,12 +142,12 @@ const DEFAULT_DATA = {
     bankLines: 42.6, ncd: 38.2, ecb: 10.8, cp: 8.4,
   },
   callingFeedback: [
-    { userId: "U100231", agent: "Ritika Sharma", calledAt: "2026-02-10 11:12", response: "PTP" },
-    { userId: "U100498", agent: "Vikas Mehta",   calledAt: "2026-02-10 12:46", response: "RNR" },
-    { userId: "U100774", agent: "Aman Verma",    calledAt: "2026-02-10 14:09", response: "Paid" },
-    { userId: "U101023", agent: "Ritika Sharma", calledAt: "2026-02-10 16:31", response: "PTP" },
-    { userId: "U101447", agent: "Neha Soni",     calledAt: "2026-02-11 10:03", response: "RNR" },
-    { userId: "U101908", agent: "Vikas Mehta",   calledAt: "2026-02-11 11:28", response: "Paid" },
+    { userId: "U100231", agent: "Ritika Sharma", calledAt: "2026-02-10 11:12", response: "PTP", timesCalled: 2, maxDpd: 41, amountOverdue: 0.38, totalOutstanding: 2.14 },
+    { userId: "U100498", agent: "Vikas Mehta",   calledAt: "2026-02-10 12:46", response: "RNR", timesCalled: 3, maxDpd: 58, amountOverdue: 0.62, totalOutstanding: 3.71 },
+    { userId: "U100774", agent: "Aman Verma",    calledAt: "2026-02-10 14:09", response: "Paid", timesCalled: 1, maxDpd: 24, amountOverdue: 0.19, totalOutstanding: 1.62 },
+    { userId: "U101023", agent: "Ritika Sharma", calledAt: "2026-02-10 16:31", response: "PTP", timesCalled: 4, maxDpd: 73, amountOverdue: 0.91, totalOutstanding: 4.86 },
+    { userId: "U101447", agent: "Neha Soni",     calledAt: "2026-02-11 10:03", response: "RNR", timesCalled: 2, maxDpd: 35, amountOverdue: 0.44, totalOutstanding: 2.58 },
+    { userId: "U101908", agent: "Vikas Mehta",   calledAt: "2026-02-11 11:28", response: "Paid", timesCalled: 1, maxDpd: 19, amountOverdue: 0.12, totalOutstanding: 1.27 },
   ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
@@ -1186,7 +1186,16 @@ export default function App() {
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
                   <thead>
                     <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
-                      {["User ID","Agent called","Calling date and time","User response (RNR / PTP / Paid)"]
+                      {[
+                        "User ID",
+                        "Agent called",
+                        "Calling date and time",
+                        "User response (RNR / PTP / Paid)",
+                        "No. of times called",
+                        "Current max DPD",
+                        "Amount overdue (₹ Cr)",
+                        "Total amount O/S (₹ Cr)",
+                      ]
                         .map((h) => (
                           <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
                         ))}
@@ -1202,6 +1211,14 @@ export default function App() {
                           <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>{row.calledAt}</td>
                           <td style={{ padding:"12px" }}>
                             <span style={{ background:`${responseColor}22`, color: responseColor, padding:"4px 10px", borderRadius:999, fontSize:11, fontWeight:700 }}>{row.response}</span>
+                          </td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>{row.timesCalled ?? "-"}</td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>{row.maxDpd ?? "-"}</td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>
+                            {typeof row.amountOverdue === "number" ? row.amountOverdue.toFixed(2) : "-"}
+                          </td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>
+                            {typeof row.totalOutstanding === "number" ? row.totalOutstanding.toFixed(2) : "-"}
                           </td>
                         </tr>
                       );
