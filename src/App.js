@@ -142,12 +142,12 @@ const DEFAULT_DATA = {
     bankLines: 42.6, ncd: 38.2, ecb: 10.8, cp: 8.4,
   },
   callingFeedback: [
-    { userId: "U100231", agent: "Ritika Sharma", calledAt: "2026-02-10 11:12", response: "PTP", timesCalled: 3, currentMaxDpd: 32, amountOverdue: 8200, totalAmountOs: 63400 },
-    { userId: "U100498", agent: "Vikas Mehta", calledAt: "2026-02-10 12:46", response: "RNR", timesCalled: 5, currentMaxDpd: 58, amountOverdue: 15750, totalAmountOs: 90200 },
-    { userId: "U100774", agent: "Aman Verma", calledAt: "2026-02-10 14:09", response: "Paid", timesCalled: 2, currentMaxDpd: 14, amountOverdue: 0, totalAmountOs: 41800 },
-    { userId: "U101023", agent: "Ritika Sharma", calledAt: "2026-02-10 16:31", response: "PTP", timesCalled: 4, currentMaxDpd: 46, amountOverdue: 12600, totalAmountOs: 77100 },
-    { userId: "U101447", agent: "Neha Soni", calledAt: "2026-02-11 10:03", response: "RNR", timesCalled: 6, currentMaxDpd: 73, amountOverdue: 19300, totalAmountOs: 110800 },
-    { userId: "U101908", agent: "Vikas Mehta", calledAt: "2026-02-11 11:28", response: "Paid", timesCalled: 1, currentMaxDpd: 9, amountOverdue: 0, totalAmountOs: 36700 },
+    { userId: "U100231", agent: "Ritika Sharma", calledAt: "2026-02-10 11:12", response: "PTP" },
+    { userId: "U100498", agent: "Vikas Mehta",   calledAt: "2026-02-10 12:46", response: "RNR" },
+    { userId: "U100774", agent: "Aman Verma",    calledAt: "2026-02-10 14:09", response: "Paid" },
+    { userId: "U101023", agent: "Ritika Sharma", calledAt: "2026-02-10 16:31", response: "PTP" },
+    { userId: "U101447", agent: "Neha Soni",     calledAt: "2026-02-11 10:03", response: "RNR" },
+    { userId: "U101908", agent: "Vikas Mehta",   calledAt: "2026-02-11 11:28", response: "Paid" },
   ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
@@ -176,6 +176,7 @@ const THEMES = {
   slate:    { bg:"#0F1117", card:"#161B22", border:"#21262D", text:"#E6EDF3", subtext:"#7D8590", accent:"#58A6FF", accent2:"#3FB950", name:"GitHub Slate"       },
   ember:    { bg:"#0D0905", card:"#150F08", border:"#2A1F12", text:"#F5E6D0", subtext:"#8B7355", accent:"#F97316", accent2:"#EAB308", name:"Ember Gold"         },
   forest:   { bg:"#050D0A", card:"#0A1610", border:"#14261E", text:"#D4EDDA", subtext:"#4A7C59", accent:"#22C55E", accent2:"#06B6D4", name:"Forest Green"       },
+  indmoney: { bg:"#041512", card:"#0A221C", border:"#1A3B33", text:"#EAFBF6", subtext:"#8FB8AB", accent:"#FFD60A", accent2:"#D4A017", name:"INDmoney"           },
 };
 
 // ─── INLINE EDITABLE NUMBER ───────────────────────────────────────────────────
@@ -362,7 +363,9 @@ export default function App() {
   const pv   = data.panelVisibility;
   const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
   const callingFeedbackRows = data.callingFeedback || DEFAULT_DATA.callingFeedback || [];
-  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity","Calling feedback"];
+  const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
+  const NAV_TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity","Calling feedback"];
+  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -440,7 +443,7 @@ export default function App() {
 
         {/* ── TAB BAR ── */}
         <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${theme.border}`, marginBottom:18, overflowX:"auto" }}>
-          {TABS.map((tab, i) => (
+          {NAV_TABS.map((tab, i) => (
             <button key={i} onClick={() => setActiveTab(i)} style={{ padding:"10px 18px", fontSize:12, fontWeight:600, border:"none", cursor:"pointer", background:"transparent", whiteSpace:"nowrap", color: activeTab===i ? theme.accent : theme.subtext, borderBottom: activeTab===i ? `2px solid ${theme.accent}` : "2px solid transparent" }}>
               {tab}
             </button>
@@ -527,27 +530,38 @@ export default function App() {
 
             {/* Row: Lender Mix + New vs Repeat */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-              <Panel title="Lender-wise Portfolio Mix" subtitle="Click labels & % to edit" theme={theme}>
-                <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                  <Donut segments={data.lenderMix.map(p=>({value:p.share}))} size={100} accent={theme.accent} accent2={theme.accent2} />
-                  <div style={{ flex:1 }}>
-                    {data.lenderMix.map((p, i) => {
-                      const clrs = [theme.accent, theme.accent2,"#F59E0B","#EF4444"];
-                      return (
-                        <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                          <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                            <div style={{ width:7, height:7, borderRadius:"50%", background: clrs[i] }} />
-                            <span style={{ fontSize:10, color: theme.subtext }}>
-                              <EditableText value={p.lender} onChange={v=>update(`lenderMix[${i}].lender`,v)} style={{ fontSize:10, color: theme.subtext }} />
-                            </span>
-                          </div>
-                          <span style={{ fontSize:10, fontWeight:700, color: theme.text }}>
-                            <EditableValue value={p.share} onChange={v=>update(`lenderMix[${i}].share`,v)} fontSize={10} color={theme.text} suffix="%" />
-                          </span>
+              <Panel title="Lender-wise Portfolio Mix" subtitle="Month-wise stacked lender contribution" theme={theme}>
+                <div style={{ display:"flex", alignItems:"flex-end", gap:6, height:150 }}>
+                  {data.monthly.map((total, mi) => {
+                    const maxTotal = Math.max(...data.monthly);
+                    const h = (total / maxTotal) * 120;
+                    const clrs = [theme.accent, theme.accent2, "#F59E0B", "#EF4444", "#A855F7"];
+                    return (
+                      <div key={mi} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                        <div style={{ fontSize:7, color: theme.subtext, marginBottom:2 }}>₹{total}</div>
+                        <div style={{ width:"88%", height:h, display:"flex", flexDirection:"column-reverse", borderRadius:"4px 4px 0 0", overflow:"hidden", background: theme.border }}>
+                          {data.lenderMix.map((l, li) => (
+                            <div key={li} title={`${l.lender}: ${(total * l.share / 100).toFixed(1)} Cr`} style={{ height:`${l.share}%`, background: clrs[li % clrs.length] }} />
+                          ))}
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div style={{ fontSize:7, color: theme.subtext, marginTop:3 }}>{data.months[mi]}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:10 }}>
+                  {data.lenderMix.map((p, i) => {
+                    const clrs = [theme.accent, theme.accent2, "#F59E0B", "#EF4444", "#A855F7"];
+                    return (
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                        <div style={{ width:9, height:9, borderRadius:2, background: clrs[i % clrs.length] }} />
+                        <span style={{ fontSize:10, color: theme.subtext }}>
+                          <EditableText value={p.lender} onChange={v=>update(`lenderMix[${i}].lender`,v)} style={{ fontSize:10, color: theme.subtext }} />
+                        </span>
+                        <span style={{ fontSize:10, color: theme.text }}>(<EditableValue value={p.share} onChange={v=>update(`lenderMix[${i}].share`,v)} fontSize={10} color={theme.text} suffix="%" />)</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </Panel>
 
@@ -739,27 +753,6 @@ export default function App() {
                   })}
                 </Panel>
               )}
-
-              <Panel title="NPA by Product" subtitle="Click values to edit" theme={theme}>
-                {data.productMix.map((p, i) => {
-                  const c = npaColor(p.npa);
-                  return (
-                    <div key={i} style={{ marginBottom:12 }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
-                        <span style={{ fontSize:12, color: theme.subtext }}>
-                          <EditableText value={p.product} onChange={v=>update(`productMix[${i}].product`,v)} style={{ fontSize:12, color: theme.subtext }} />
-                        </span>
-                        <span style={{ fontSize:12, fontWeight:700, color: c }}>
-                          <EditableValue value={p.npa} onChange={v=>update(`productMix[${i}].npa`,v)} fontSize={12} color={c} suffix="%" />
-                        </span>
-                      </div>
-                      <div style={{ background: theme.border, borderRadius:4, height:8, overflow:"hidden" }}>
-                        <div style={{ width:`${(p.npa/10)*100}%`, background: c, height:"100%", borderRadius:4 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </Panel>
             </div>
 
             <Panel title="Custom Query View" subtitle="Credit quality vintage by disbursement month" theme={theme}>
@@ -795,18 +788,22 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 2 — COLLECTIONS (unchanged)
         ══════════════════════════════════════════════ */}
+        {/* ══════════════════════════════════════════════
+            TAB 2 — COLLECTIONS (Fixed)
+        ══════════════════════════════════════════════ */}
         {activeTab === 2 && pv.collections && (
           <div>
+            {/* KPI Cards */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
               {[
                 { label:"Collection Efficiency", field:"collections.efficiency",   target:97, lowerBad:true,  icon:"✅", color: theme.accent,  desc:"Actual vs demand"  },
-                { label:"Resolution Rate",        field:"collections.resolution",   target:75, lowerBad:true,  icon:"🔄", color: theme.accent2, desc:"NPA resolved"      },
-                { label:"Rollback Rate",          field:"collections.rollback",     target:40, lowerBad:true,  icon:"↩️", color:"#A855F7",       desc:"NPA cured"         },
-                { label:"Contactability",         field:"collections.contactability",target:90,lowerBad:true,  icon:"📞", color:"#F59E0B",       desc:"Customers reached" },
-                { label:"First Bounce",           field:"collections.firstBounce",  target:8,  lowerBad:false, icon:"🏓", color:"#EF4444",       desc:"EMI bounce rate"   },
-                { label:"PTP Rate",               field:"collections.ptp",          target:70, lowerBad:true,  icon:"🤝", color: theme.accent2, desc:"Promise to pay"    },
-                { label:"PTP Honored",            field:"collections.ptpHonored",   target:75, lowerBad:true,  icon:"💯", color: theme.accent,  desc:"Promises kept"     },
-                { label:"Field Efficiency",       field:"collections.fieldEff",     target:85, lowerBad:true,  icon:"🚗", color:"#F97316",       desc:"Field conversion"  },
+                { label:"Resolution Rate",       field:"collections.resolution",    target:75, lowerBad:true,  icon:"🔄", color: theme.accent2, desc:"NPA resolved"       },
+                { label:"Rollback Rate",         field:"collections.rollback",      target:40, lowerBad:true,  icon:"↩️", color:"#A855F7",        desc:"NPA cured"          },
+                { label:"Contactability",        field:"collections.contactability",target:90,lowerBad:true,  icon:"📞", color:"#F59E0B",        desc:"Customers reached" },
+                { label:"First Bounce",          field:"collections.firstBounce",   target:8,  lowerBad:false, icon:"🏓", color:"#EF4444",        desc:"EMI bounce rate"   },
+                { label:"PTP Rate",              field:"collections.ptp",           target:70, lowerBad:true,  icon:"🤝", color: theme.accent2, desc:"Promise to pay"     },
+                { label:"PTP Honored",           field:"collections.ptpHonored",    target:75, lowerBad:true,  icon:"💯", color: theme.accent,  desc:"Promises kept"      },
+                { label:"Field Efficiency",      field:"collections.fieldEff",      target:85, lowerBad:true,  icon:"🚗", color:"#F97316",        desc:"Field conversion"  },
               ].map((k, i) => {
                 const val     = k.field.split(".").reduce((o,p)=>o[p], data);
                 const onTrack = k.lowerBad ? val >= k.target : val <= k.target;
@@ -829,12 +826,13 @@ export default function App() {
               })}
             </div>
 
+            {/* Collection Funnel */}
             <Panel title="Collection Funnel" subtitle="End-to-end demand → collected pipeline" theme={theme}>
               {[
-                { stage:"Total Demand",     val:100 },
-                { stage:"Contactable",      val: data.collections.contactability },
-                { stage:"PTP Received",     val: data.collections.ptp },
-                { stage:"PTP Honored",      val: data.collections.ptp * data.collections.ptpHonored / 100 },
+                { stage:"Total Demand",      val:100 },
+                { stage:"Contactable",       val: data.collections.contactability },
+                { stage:"PTP Received",      val: data.collections.ptp },
+                { stage:"PTP Honored",       val: data.collections.ptp * data.collections.ptpHonored / 100 },
                 { stage:"Finally Collected",val: data.collections.efficiency },
               ].map((s, i) => {
                 const clrs=[theme.accent2,"#F59E0B","#A855F7","#F97316",theme.accent];
@@ -852,6 +850,41 @@ export default function App() {
               })}
             </Panel>
 
+            {/* Bucket Trends (Column View) */}
+            <Panel title="Collections Bucket Trend — Monthly Column View" subtitle="Bucket-wise month-on-month users" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                {[
+                  { label:"Bucket X (DPD 1-30)", key:"bucketX", color: theme.accent },
+                  { label:"Bucket 1 (DPD 31-60)", key:"bucket1", color: theme.accent2 },
+                  { label:"Bucket 2 (DPD 61-90)", key:"bucket2", color: "#F59E0B" },
+                  { label:"Bucket 3 (DPD 90+)", key:"bucket3", color: "#EF4444" },
+                ].map((cfg, ci) => {
+                  const maxValue = Math.max(...collectionsMonthlyRows.map(r => r[cfg.key] || 0), 1);
+                  return (
+                    <div key={ci} style={{ background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"10px 10px 8px" }}>
+                      <div style={{ fontSize:11, fontWeight:700, color: cfg.color, marginBottom:8 }}>{cfg.label}</div>
+                      <div style={{ overflowX:"auto" }}>
+                        <div style={{ display:"flex", alignItems:"flex-end", gap:8, minWidth:460, height:170 }}>
+                          {collectionsMonthlyRows.map((row, i) => {
+                            const users = row[cfg.key] || 0;
+                            const h = Math.max(8, (users / maxValue) * 130);
+                            return (
+                              <div key={`${cfg.key}-${i}`} style={{ flex:1, minWidth:30, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                                <div style={{ fontSize:9, color: theme.subtext, marginBottom:4 }}>{users}</div>
+                                <div title={`${row.month}: ${users} users`} style={{ width:"75%", height:h, background:cfg.color, borderRadius:"6px 6px 2px 2px", boxShadow:`0 4px 10px ${cfg.color}33` }} />
+                                <div style={{ fontSize:9, color: theme.subtext, marginTop:4 }}>{row.month}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
+
+            {/* Collections Efficiency (Charts) */}
             <Panel title="Collections Efficiency — Monthly Column View" subtitle="Month-wise collection %, contactability %, and first bounce %" theme={theme} style={{ marginTop:14 }}>
               <div style={{ overflowX:"auto", background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"12px 12px 10px" }}>
                 <div style={{ minWidth:980 }}>
@@ -906,40 +939,54 @@ export default function App() {
               </div>
             </Panel>
 
-            <Panel title="Collections Month-wise Table" subtitle="Monthly disbursal, bounce, bucket, and contactability view" theme={theme} style={{ marginTop:14 }}>
+            {/* Main Table */}
+           {/* Transposed Main Table */}
+           <Panel title="Collections Month-wise Table" subtitle="Metrics (Rows) vs Months (Columns)" theme={theme} style={{ marginTop:14 }}>
               <div style={{ overflowX:"auto" }}>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:980 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
                   <thead>
                     <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
-                      {[
-                        "Month",
-                        "Disbursal Amount",
-                        "FEMI % (First Bounce)",
-                        "Current POS",
-                        "Currently Bucket X (Users in DPD 1-30)",
-                        "Currently Bucket 1 (Users in DPD 31-60)",
-                        "Currently Bucket 2 (Users in DPD 61-90)",
-                        "Currently Bucket 3 (Users in DPD 90+)",
-                        "Contactability %",
-                      ].map(h => (
-                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>{h}</th>
+                      {/* Frozen First Column Header */}
+                      <th style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap", position:"sticky", left:0, background: theme.card, zIndex:10, borderRight:`1px solid ${theme.border}` }}>
+                        Metric
+                      </th>
+                      {/* Month Headers */}
+                      {data.collectionsMonthly.map((row, i) => (
+                        <th key={i} style={{ padding:"10px 12px", textAlign:"center", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>
+                          <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:10, fontWeight:700, textAlign:"center" }} />
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {data.collectionsMonthly.map((row, i) => (
-                      <tr key={row.month} style={{ borderBottom:`1px solid ${theme.border}` }}>
-                        <td style={{ padding:"10px 12px", color: theme.text, fontWeight:600 }}>
-                          <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:12, fontWeight:600 }} />
+                    {[
+                      { label:"Disbursal Amount",      key:"disbursal",      prefix:"₹", suffix:"" },
+                      { label:"FEMI % (First Bounce)", key:"femi",           prefix:"",  suffix:"%" },
+                      { label:"Current POS",           key:"currentPOS",     prefix:"₹", suffix:"" },
+                      { label:"Bucket X (1-30 DPD)",   key:"bucketX",        prefix:"",  suffix:"" },
+                      { label:"Bucket 1 (31-60 DPD)",  key:"bucket1",        prefix:"",  suffix:"" },
+                      { label:"Bucket 2 (61-90 DPD)",  key:"bucket2",        prefix:"",  suffix:"" },
+                      { label:"Bucket 3 (90+ DPD)",    key:"bucket3",        prefix:"",  suffix:"" },
+                      { label:"Contactability",        key:"contactability", prefix:"",  suffix:"%" },
+                    ].map((metric, mi) => (
+                      <tr key={metric.key} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        {/* Frozen First Column Label */}
+                        <td style={{ padding:"10px 12px", color: theme.text, fontWeight:600, whiteSpace:"nowrap", position:"sticky", left:0, background: theme.card, zIndex:10, borderRight:`1px solid ${theme.border}` }}>
+                          {metric.label}
                         </td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.disbursal} onChange={v=>update(`collectionsMonthly[${i}].disbursal`,v)} fontSize={12} color={theme.subtext} /></td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.femi} onChange={v=>update(`collectionsMonthly[${i}].femi`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.currentPOS} onChange={v=>update(`collectionsMonthly[${i}].currentPOS`,v)} fontSize={12} color={theme.subtext} /></td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucketX} onChange={v=>update(`collectionsMonthly[${i}].bucketX`,v)} fontSize={12} color={theme.subtext} /></td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket1} onChange={v=>update(`collectionsMonthly[${i}].bucket1`,v)} fontSize={12} color={theme.subtext} /></td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket2} onChange={v=>update(`collectionsMonthly[${i}].bucket2`,v)} fontSize={12} color={theme.subtext} /></td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket3} onChange={v=>update(`collectionsMonthly[${i}].bucket3`,v)} fontSize={12} color={theme.subtext} /></td>
-                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.contactability} onChange={v=>update(`collectionsMonthly[${i}].contactability`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
+                        {/* Data Cells */}
+                        {data.collectionsMonthly.map((row, i) => (
+                          <td key={i} style={{ padding:"10px 12px", color: theme.subtext, textAlign:"center", whiteSpace:"nowrap" }}>
+                            {metric.prefix}
+                            <EditableValue
+                              value={row[metric.key]}
+                              onChange={v=>update(`collectionsMonthly[${i}].${metric.key}`,v)}
+                              fontSize={12}
+                              color={theme.subtext}
+                              suffix={metric.suffix}
+                            />
+                          </td>
+                        ))}
                       </tr>
                     ))}
                   </tbody>
@@ -948,7 +995,6 @@ export default function App() {
             </Panel>
           </div>
         )}
-
         {/* ══════════════════════════════════════════════
             TAB 3 — PRODUCT MIX (unchanged)
         ══════════════════════════════════════════════ */}
@@ -1130,7 +1176,6 @@ export default function App() {
           </div>
         )}
 
-
         {/* ══════════════════════════════════════════════
             TAB 5 — CALLING FEEDBACK
         ══════════════════════════════════════════════ */}
@@ -1138,30 +1183,18 @@ export default function App() {
           <div>
             <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
               <div style={{ overflowX:"auto" }}>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1300 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
                   <thead>
                     <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
-                      {[
-                        "User ID",
-                        "Agent called",
-                        "Calling date and time",
-                        "User response (RNR / PTP / Paid)",
-                        "No. of times called",
-                        "Current max DPD",
-                        "Amount overdue (₹)",
-                        "Total amount O/S (₹)",
-                      ].map((h) => (
-                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
-                      ))}
+                      {["User ID","Agent called","Calling date and time","User response (RNR / PTP / Paid)"]
+                        .map((h) => (
+                          <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                        ))}
                     </tr>
                   </thead>
                   <tbody>
                     {callingFeedbackRows.map((row, i) => {
                       const responseColor = row.response === "Paid" ? theme.accent : row.response === "PTP" ? "#F59E0B" : "#EF4444";
-                      const timesCalled = row.timesCalled ?? 0;
-                      const currentMaxDpd = row.currentMaxDpd ?? 0;
-                      const amountOverdue = row.amountOverdue ?? 0;
-                      const totalAmountOs = row.totalAmountOs ?? 0;
                       return (
                         <tr key={`${row.userId}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
                           <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.userId}</td>
@@ -1170,10 +1203,6 @@ export default function App() {
                           <td style={{ padding:"12px" }}>
                             <span style={{ background:`${responseColor}22`, color: responseColor, padding:"4px 10px", borderRadius:999, fontSize:11, fontWeight:700 }}>{row.response}</span>
                           </td>
-                          <td style={{ padding:"12px", color: theme.subtext }}>{timesCalled}</td>
-                          <td style={{ padding:"12px", color: theme.subtext }}>{currentMaxDpd}</td>
-                          <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>₹{amountOverdue.toLocaleString()}</td>
-                          <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>₹{totalAmountOs.toLocaleString()}</td>
                         </tr>
                       );
                     })}
