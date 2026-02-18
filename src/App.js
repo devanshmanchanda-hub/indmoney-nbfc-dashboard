@@ -816,6 +816,91 @@ export default function App() {
                 );
               })}
             </Panel>
+
+            <Panel title="Collections Efficiency — Monthly Column View" subtitle="Month-wise collection %, contactability %, and first bounce %" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <div style={{ display:"flex", alignItems:"flex-end", gap:16, minWidth:980, padding:"10px 4px 0" }}>
+                  {data.collectionsMonthly.map((row, i) => {
+                    const collectionPct = Math.max(0, Math.min(100, row.contactability - row.femi * 1.35));
+                    const series = [
+                      { label:"Collection %", value: collectionPct, color: theme.accent },
+                      { label:"Contactability %", value: row.contactability, color: theme.accent2 },
+                      { label:"First Bounce %", value: row.femi, color: "#EF4444" },
+                    ];
+
+                    return (
+                      <div key={row.month} style={{ minWidth:64, flex:"0 0 auto" }}>
+                        <div style={{ height:220, display:"flex", alignItems:"flex-end", justifyContent:"center", gap:6 }}>
+                          {series.map((bar, idx) => (
+                            <div key={idx} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+                              <div style={{ fontSize:9, color: bar.color, fontWeight:700 }}>{bar.value.toFixed(1)}%</div>
+                              <div title={`${bar.label}: ${bar.value.toFixed(1)}%`} style={{ width:12, height:`${Math.max(8, bar.value * 2)}px`, borderRadius:4, background: bar.color, opacity:0.9 }} />
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ marginTop:8, textAlign:"center", fontSize:11, fontWeight:700, color: theme.text }}>
+                          <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:11, fontWeight:700 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginTop:12 }}>
+                {[
+                  { label:"Collection %", color: theme.accent },
+                  { label:"Contactability %", color: theme.accent2 },
+                  { label:"First Bounce %", color: "#EF4444" },
+                ].map((l, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:6, fontSize:11, color: theme.subtext }}>
+                    <span style={{ width:10, height:10, borderRadius:2, background:l.color, display:"inline-block" }} />
+                    {l.label}
+                  </div>
+                ))}
+              </div>
+            </Panel>
+
+            <Panel title="Collections Month-wise Table" subtitle="Monthly disbursal, bounce, bucket, and contactability view" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:980 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {[
+                        "Month",
+                        "Disbursal Amount",
+                        "FEMI % (First Bounce)",
+                        "Current POS",
+                        "Currently Bucket X (Users in DPD 1-30)",
+                        "Currently Bucket 1 (Users in DPD 31-60)",
+                        "Currently Bucket 2 (Users in DPD 61-90)",
+                        "Currently Bucket 3 (Users in DPD 90+)",
+                        "Contactability %",
+                      ].map(h => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.collectionsMonthly.map((row, i) => (
+                      <tr key={row.month} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"10px 12px", color: theme.text, fontWeight:600 }}>
+                          <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:12, fontWeight:600 }} />
+                        </td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.disbursal} onChange={v=>update(`collectionsMonthly[${i}].disbursal`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.femi} onChange={v=>update(`collectionsMonthly[${i}].femi`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.currentPOS} onChange={v=>update(`collectionsMonthly[${i}].currentPOS`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucketX} onChange={v=>update(`collectionsMonthly[${i}].bucketX`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket1} onChange={v=>update(`collectionsMonthly[${i}].bucket1`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket2} onChange={v=>update(`collectionsMonthly[${i}].bucket2`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket3} onChange={v=>update(`collectionsMonthly[${i}].bucket3`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.contactability} onChange={v=>update(`collectionsMonthly[${i}].contactability`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
           </div>
         )}
 
