@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
+const buildVintageCurve = (start, growth) =>
+  Array.from({ length: 36 }, (_, i) => Number((start + i * growth + Math.sin(i / 3) * 0.08).toFixed(2)));
+
 // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
   meta: { companyName: "FinServe NBFC Ltd", reportDate: "Feb 2026" },
@@ -85,6 +88,14 @@ const DEFAULT_DATA = {
     { month: "Dec", disbursal: 680, femi: 8.6, currentPOS: 5280, bucketX: 318, bucket1: 169, bucket2: 93, bucket3: 69, contactability: 88.5 },
     { month: "Jan", disbursal: 750, femi: 9.0, currentPOS: 5480, bucketX: 348, bucket1: 184, bucket2: 102, bucket3: 76, contactability: 88.3 },
   ],
+  creditQualityCustomQuery: [
+    { disbursement_month: "2023-01-01", loans: 1620, users: 1305, disbursed_value_cr: 21.59, disbursed_value: 215930324, m: [0.00, 0.26, 0.47, 0.63, 0.78, 1.12, 1.33, 1.47, 1.58, 2.04, 2.11, 2.58, 3.03, 3.29, 3.48, 3.54, 3.56, 3.79, 3.89, 4.14, 4.41, 4.38, 4.63, 4.88, 4.99, 5.20, 5.26, 5.36, 5.50, 5.50, 5.52, 5.57, 5.52, 5.57, 5.56, 5.73] },
+    { disbursement_month: "2023-02-01", loans: 2211, users: 1745, disbursed_value_cr: 27.38, disbursed_value: 273791890.65, m: buildVintageCurve(0.10, 0.15) },
+    { disbursement_month: "2023-03-01", loans: 2727, users: 2151, disbursed_value_cr: 30.51, disbursed_value: 305122421, m: buildVintageCurve(0.23, 0.16) },
+    { disbursement_month: "2023-04-01", loans: 3920, users: 3026, disbursed_value_cr: 44.25, disbursed_value: 442488748, m: buildVintageCurve(0.38, 0.14) },
+    { disbursement_month: "2023-05-01", loans: 4779, users: 3643, disbursed_value_cr: 48.22, disbursed_value: 482211575, m: buildVintageCurve(0.23, 0.145) },
+    { disbursement_month: "2023-06-01", loans: 5893, users: 4415, disbursed_value_cr: 54.14, disbursed_value: 541359728, m: buildVintageCurve(0.21, 0.14) },
+  ],
   productMix: [
     { product: "Home Loans",      aum: 1420, pct: 29.5, npa: 2.1 },
     { product: "Business Loans",  aum: 980,  pct: 20.3, npa: 4.2 },
@@ -130,10 +141,18 @@ const DEFAULT_DATA = {
     debtEquity: 4.8, borrowingCost: 9.2,
     bankLines: 42.6, ncd: 38.2, ecb: 10.8, cp: 8.4,
   },
+  callingFeedback: [
+    { userId: "U100231", agent: "Ritika Sharma", calledAt: "2026-02-10 11:12", response: "PTP" },
+    { userId: "U100498", agent: "Vikas Mehta",   calledAt: "2026-02-10 12:46", response: "RNR" },
+    { userId: "U100774", agent: "Aman Verma",    calledAt: "2026-02-10 14:09", response: "Paid" },
+    { userId: "U101023", agent: "Ritika Sharma", calledAt: "2026-02-10 16:31", response: "PTP" },
+    { userId: "U101447", agent: "Neha Soni",     calledAt: "2026-02-11 10:03", response: "RNR" },
+    { userId: "U101908", agent: "Vikas Mehta",   calledAt: "2026-02-11 11:28", response: "Paid" },
+  ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
     agingBucket: true, profitability: true, creditQuality: true,
-    collections: true, liquidity: true,
+    collections: true, liquidity: true, callingFeedback: true,
   },
   selectedLender: "ALL", // ALL / CS / IDFC / InCred
 };
@@ -157,6 +176,7 @@ const THEMES = {
   slate:    { bg:"#0F1117", card:"#161B22", border:"#21262D", text:"#E6EDF3", subtext:"#7D8590", accent:"#58A6FF", accent2:"#3FB950", name:"GitHub Slate"       },
   ember:    { bg:"#0D0905", card:"#150F08", border:"#2A1F12", text:"#F5E6D0", subtext:"#8B7355", accent:"#F97316", accent2:"#EAB308", name:"Ember Gold"         },
   forest:   { bg:"#050D0A", card:"#0A1610", border:"#14261E", text:"#D4EDDA", subtext:"#4A7C59", accent:"#22C55E", accent2:"#06B6D4", name:"Forest Green"       },
+  indmoney: { bg:"#041512", card:"#0A221C", border:"#1A3B33", text:"#EAFBF6", subtext:"#8FB8AB", accent:"#FFD60A", accent2:"#D4A017", name:"INDmoney"           },
 };
 
 // ─── INLINE EDITABLE NUMBER ───────────────────────────────────────────────────
@@ -341,7 +361,9 @@ export default function App() {
   );
 
   const pv   = data.panelVisibility;
-  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
+  const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
+  const callingFeedbackRows = data.callingFeedback || DEFAULT_DATA.callingFeedback || [];
+  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity","Calling feedback"];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -741,17 +763,31 @@ export default function App() {
               </Panel>
             </div>
 
-            {/* Placeholder for Redshift query view */}
-            <Panel title="Custom Query View" subtitle="Bring your Redshift query results here" theme={theme}>
-              <div style={{ padding:"40px 20px", textAlign:"center", background: theme.bg, borderRadius:10 }}>
-                <div style={{ fontSize:32, marginBottom:12 }}>📊</div>
-                <div style={{ color: theme.subtext, fontSize:13 }}>
-                  Connect your Redshift query output here.<br/>
-                  This panel will display the results from your custom lending analytics query.
-                </div>
-                <div style={{ marginTop:16, padding:"8px 16px", background: theme.accent+"22", borderRadius:8, fontSize:11, color: theme.accent, display:"inline-block" }}>
-                  Query placeholder - add your data connection
-                </div>
+            <Panel title="Custom Query View" subtitle="Credit quality vintage by disbursement month" theme={theme}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", minWidth:2600, fontSize:11 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      {["disbursement_month", "loans", "users", "disbursed_value_cr", "disbursed_value", ...Array.from({ length: 36 }, (_, idx) => `m${idx + 1}`)].map((h) => (
+                        <th key={h} style={{ padding:"10px 10px", textAlign:"left", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap", position:"sticky", top:0, background:theme.bg }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {creditQualityRows.map((row, ri) => (
+                      <tr key={`${row.disbursement_month || "row"}-${ri}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"9px 10px", color:theme.text, whiteSpace:"nowrap" }}>{row.disbursement_month}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.loans.toLocaleString()}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.users.toLocaleString()}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value_cr.toFixed(2)}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        {Array.from({ length: 36 }, (_, mi) => row.m?.[mi]).map((value, mi) => (
+                          <td key={mi} style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{value || value === 0 ? Number(value).toFixed(2) : ""}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </Panel>
           </div>
@@ -815,6 +851,101 @@ export default function App() {
                   </div>
                 );
               })}
+            </Panel>
+
+            <Panel title="Collections Efficiency — Monthly Column View" subtitle="Month-wise collection %, contactability %, and first bounce %" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"12px 12px 10px" }}>
+                <div style={{ minWidth:980 }}>
+                  <div style={{ height:240, position:"relative", borderBottom:`1px solid ${theme.border}` }}>
+                    {[25, 50, 75, 100].map(tick => (
+                      <div key={tick} style={{ position:"absolute", left:0, right:0, bottom:`${tick * 2}px`, borderTop:`1px dashed ${theme.border}`, opacity:0.75 }} />
+                    ))}
+                    <div style={{ position:"absolute", right:0, top:0, display:"flex", flexDirection:"column", gap:36, color:theme.subtext, fontSize:9 }}>
+                      <span>100%</span><span>75%</span><span>50%</span><span>25%</span>
+                    </div>
+
+                    <div style={{ height:"100%", display:"flex", alignItems:"flex-end", gap:14, padding:"0 26px 0 6px" }}>
+                      {data.collectionsMonthly.map((row, i) => {
+                        const collectionPct = Math.max(0, Math.min(100, row.contactability - row.femi * 1.35));
+                        const series = [
+                          { label:"Collection %", value: collectionPct, color: theme.accent },
+                          { label:"Contactability %", value: row.contactability, color: theme.accent2 },
+                          { label:"First Bounce %", value: row.femi, color: "#EF4444" },
+                        ];
+
+                        return (
+                          <div key={row.month} style={{ minWidth:68, flex:"0 0 auto" }}>
+                            <div style={{ height:220, display:"flex", alignItems:"flex-end", justifyContent:"center", gap:6 }}>
+                              {series.map((bar, idx) => (
+                                <div key={idx} style={{ width:14, borderRadius:"8px 8px 3px 3px", height:`${Math.max(10, bar.value * 2)}px`, background: bar.color, boxShadow:`0 6px 16px ${bar.color}33`, position:"relative" }} title={`${bar.label}: ${bar.value.toFixed(1)}%`}>
+                                  <span style={{ position:"absolute", top:-16, left:"50%", transform:"translateX(-50%)", fontSize:9, color:bar.color, fontWeight:700, whiteSpace:"nowrap" }}>{bar.value.toFixed(1)}%</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ marginTop:8, textAlign:"center", fontSize:11, fontWeight:700, color: theme.text }}>
+                              <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:11, fontWeight:700 }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display:"flex", gap:14, flexWrap:"wrap", marginTop:12 }}>
+                {[
+                  { label:"Collection %", color: theme.accent },
+                  { label:"Contactability %", color: theme.accent2 },
+                  { label:"First Bounce %", color: "#EF4444" },
+                ].map((l, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:7, fontSize:11, color: theme.subtext, padding:"4px 8px", border:`1px solid ${theme.border}`, borderRadius:16 }}>
+                    <span style={{ width:10, height:10, borderRadius:2, background:l.color, display:"inline-block" }} />
+                    {l.label}
+                  </div>
+                ))}
+              </div>
+            </Panel>
+
+            <Panel title="Collections Month-wise Table" subtitle="Monthly disbursal, bounce, bucket, and contactability view" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:980 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {[
+                        "Month",
+                        "Disbursal Amount",
+                        "FEMI % (First Bounce)",
+                        "Current POS",
+                        "Currently Bucket X (Users in DPD 1-30)",
+                        "Currently Bucket 1 (Users in DPD 31-60)",
+                        "Currently Bucket 2 (Users in DPD 61-90)",
+                        "Currently Bucket 3 (Users in DPD 90+)",
+                        "Contactability %",
+                      ].map(h => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.collectionsMonthly.map((row, i) => (
+                      <tr key={row.month} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"10px 12px", color: theme.text, fontWeight:600 }}>
+                          <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:12, fontWeight:600 }} />
+                        </td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.disbursal} onChange={v=>update(`collectionsMonthly[${i}].disbursal`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.femi} onChange={v=>update(`collectionsMonthly[${i}].femi`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}>₹<EditableValue value={row.currentPOS} onChange={v=>update(`collectionsMonthly[${i}].currentPOS`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucketX} onChange={v=>update(`collectionsMonthly[${i}].bucketX`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket1} onChange={v=>update(`collectionsMonthly[${i}].bucket1`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket2} onChange={v=>update(`collectionsMonthly[${i}].bucket2`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.bucket3} onChange={v=>update(`collectionsMonthly[${i}].bucket3`,v)} fontSize={12} color={theme.subtext} /></td>
+                        <td style={{ padding:"10px 12px", color: theme.subtext }}><EditableValue value={row.contactability} onChange={v=>update(`collectionsMonthly[${i}].contactability`,v)} fontSize={12} color={theme.subtext} suffix="%" /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Panel>
           </div>
         )}
@@ -996,6 +1127,57 @@ export default function App() {
                   );
                 })}
               </Panel>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB 5 — CALLING FEEDBACK
+        ══════════════════════════════════════════════ */}
+        {activeTab === 5 && (pv.callingFeedback ?? true) && (
+          <div>
+            <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {["User ID","Agent called","Calling date and time","User response (RNR / PTP / Paid)"]
+                        .map((h) => (
+                          <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                        ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {callingFeedbackRows.map((row, i) => {
+                      const responseColor = row.response === "Paid" ? theme.accent : row.response === "PTP" ? "#F59E0B" : "#EF4444";
+                      return (
+                        <tr key={`${row.userId}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                          <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.userId}</td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>{row.agent}</td>
+                          <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>{row.calledAt}</td>
+                          <td style={{ padding:"12px" }}>
+                            <span style={{ background:`${responseColor}22`, color: responseColor, padding:"4px 10px", borderRadius:999, fontSize:11, fontWeight:700 }}>{row.response}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginTop:14 }}>
+              {[
+                { label:"Total Calls", value: callingFeedbackRows.length, color: theme.accent2, suffix: "" },
+                { label:"PTP", value: callingFeedbackRows.filter(r => r.response === "PTP").length, color: "#F59E0B", suffix: "" },
+                { label:"Paid", value: callingFeedbackRows.filter(r => r.response === "Paid").length, color: theme.accent, suffix: "" },
+                { label:"RNR", value: callingFeedbackRows.filter(r => r.response === "RNR").length, color: "#EF4444", suffix: "" },
+              ].map((k, i) => (
+                <div key={i} style={{ background: theme.card, border:`1px solid ${k.color}33`, borderRadius:12, padding:"14px 16px" }}>
+                  <div style={{ fontSize:10, color: theme.subtext, textTransform:"uppercase", letterSpacing:"0.06em", fontWeight:700 }}>{k.label}</div>
+                  <div style={{ fontSize:24, fontWeight:800, color: k.color, marginTop:6 }}>{k.value}{k.suffix}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}
