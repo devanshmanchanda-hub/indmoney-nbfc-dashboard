@@ -352,6 +352,7 @@ export default function App() {
   );
 
   const pv   = data.panelVisibility;
+  const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
   const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -763,15 +764,15 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.creditQualityCustomQuery.map((row) => (
-                      <tr key={row.disbursement_month} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                    {creditQualityRows.map((row, ri) => (
+                      <tr key={`${row.disbursement_month || "row"}-${ri}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
                         <td style={{ padding:"9px 10px", color:theme.text, whiteSpace:"nowrap" }}>{row.disbursement_month}</td>
                         <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.loans.toLocaleString()}</td>
                         <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.users.toLocaleString()}</td>
                         <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value_cr.toFixed(2)}</td>
                         <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        {row.m.map((value, mi) => (
-                          <td key={mi} style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{value ? value.toFixed(2) : ""}</td>
+                        {Array.from({ length: 36 }, (_, mi) => row.m?.[mi]).map((value, mi) => (
+                          <td key={mi} style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{value || value === 0 ? Number(value).toFixed(2) : ""}</td>
                         ))}
                       </tr>
                     ))}
