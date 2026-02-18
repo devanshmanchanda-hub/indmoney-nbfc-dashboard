@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
+const buildVintageCurve = (start, growth) =>
+  Array.from({ length: 36 }, (_, i) => Number((start + i * growth + Math.sin(i / 3) * 0.08).toFixed(2)));
+
 // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
   meta: { companyName: "FinServe NBFC Ltd", reportDate: "Feb 2026" },
@@ -84,6 +87,14 @@ const DEFAULT_DATA = {
     { month: "Nov", disbursal: 710, femi: 9.3, currentPOS: 5120, bucketX: 332, bucket1: 176, bucket2: 97, bucket3: 72, contactability: 87.8 },
     { month: "Dec", disbursal: 680, femi: 8.6, currentPOS: 5280, bucketX: 318, bucket1: 169, bucket2: 93, bucket3: 69, contactability: 88.5 },
     { month: "Jan", disbursal: 750, femi: 9.0, currentPOS: 5480, bucketX: 348, bucket1: 184, bucket2: 102, bucket3: 76, contactability: 88.3 },
+  ],
+  creditQualityCustomQuery: [
+    { disbursement_month: "2023-01-01", loans: 1620, users: 1305, disbursed_value_cr: 21.59, disbursed_value: 215930324, m: [0.00, 0.26, 0.47, 0.63, 0.78, 1.12, 1.33, 1.47, 1.58, 2.04, 2.11, 2.58, 3.03, 3.29, 3.48, 3.54, 3.56, 3.79, 3.89, 4.14, 4.41, 4.38, 4.63, 4.88, 4.99, 5.20, 5.26, 5.36, 5.50, 5.50, 5.52, 5.57, 5.52, 5.57, 5.56, 5.73] },
+    { disbursement_month: "2023-02-01", loans: 2211, users: 1745, disbursed_value_cr: 27.38, disbursed_value: 273791890.65, m: buildVintageCurve(0.10, 0.15) },
+    { disbursement_month: "2023-03-01", loans: 2727, users: 2151, disbursed_value_cr: 30.51, disbursed_value: 305122421, m: buildVintageCurve(0.23, 0.16) },
+    { disbursement_month: "2023-04-01", loans: 3920, users: 3026, disbursed_value_cr: 44.25, disbursed_value: 442488748, m: buildVintageCurve(0.38, 0.14) },
+    { disbursement_month: "2023-05-01", loans: 4779, users: 3643, disbursed_value_cr: 48.22, disbursed_value: 482211575, m: buildVintageCurve(0.23, 0.145) },
+    { disbursement_month: "2023-06-01", loans: 5893, users: 4415, disbursed_value_cr: 54.14, disbursed_value: 541359728, m: buildVintageCurve(0.21, 0.14) },
   ],
   productMix: [
     { product: "Home Loans",      aum: 1420, pct: 29.5, npa: 2.1 },
@@ -341,6 +352,7 @@ export default function App() {
   );
 
   const pv   = data.panelVisibility;
+  const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
   const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -741,17 +753,31 @@ export default function App() {
               </Panel>
             </div>
 
-            {/* Placeholder for Redshift query view */}
-            <Panel title="Custom Query View" subtitle="Bring your Redshift query results here" theme={theme}>
-              <div style={{ padding:"40px 20px", textAlign:"center", background: theme.bg, borderRadius:10 }}>
-                <div style={{ fontSize:32, marginBottom:12 }}>📊</div>
-                <div style={{ color: theme.subtext, fontSize:13 }}>
-                  Connect your Redshift query output here.<br/>
-                  This panel will display the results from your custom lending analytics query.
-                </div>
-                <div style={{ marginTop:16, padding:"8px 16px", background: theme.accent+"22", borderRadius:8, fontSize:11, color: theme.accent, display:"inline-block" }}>
-                  Query placeholder - add your data connection
-                </div>
+            <Panel title="Custom Query View" subtitle="Credit quality vintage by disbursement month" theme={theme}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", minWidth:2600, fontSize:11 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      {["disbursement_month", "loans", "users", "disbursed_value_cr", "disbursed_value", ...Array.from({ length: 36 }, (_, idx) => `m${idx + 1}`)].map((h) => (
+                        <th key={h} style={{ padding:"10px 10px", textAlign:"left", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap", position:"sticky", top:0, background:theme.bg }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {creditQualityRows.map((row, ri) => (
+                      <tr key={`${row.disbursement_month || "row"}-${ri}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"9px 10px", color:theme.text, whiteSpace:"nowrap" }}>{row.disbursement_month}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.loans.toLocaleString()}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.users.toLocaleString()}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value_cr.toFixed(2)}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        {Array.from({ length: 36 }, (_, mi) => row.m?.[mi]).map((value, mi) => (
+                          <td key={mi} style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{value || value === 0 ? Number(value).toFixed(2) : ""}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </Panel>
           </div>
@@ -815,6 +841,60 @@ export default function App() {
                   </div>
                 );
               })}
+            </Panel>
+
+            <Panel title="Collections Efficiency — Monthly Column View" subtitle="Month-wise collection %, contactability %, and first bounce %" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"12px 12px 10px" }}>
+                <div style={{ minWidth:980 }}>
+                  <div style={{ height:240, position:"relative", borderBottom:`1px solid ${theme.border}` }}>
+                    {[25, 50, 75, 100].map(tick => (
+                      <div key={tick} style={{ position:"absolute", left:0, right:0, bottom:`${tick * 2}px`, borderTop:`1px dashed ${theme.border}`, opacity:0.75 }} />
+                    ))}
+                    <div style={{ position:"absolute", right:0, top:0, display:"flex", flexDirection:"column", gap:36, color:theme.subtext, fontSize:9 }}>
+                      <span>100%</span><span>75%</span><span>50%</span><span>25%</span>
+                    </div>
+
+                    <div style={{ height:"100%", display:"flex", alignItems:"flex-end", gap:14, padding:"0 26px 0 6px" }}>
+                      {data.collectionsMonthly.map((row, i) => {
+                        const collectionPct = Math.max(0, Math.min(100, row.contactability - row.femi * 1.35));
+                        const series = [
+                          { label:"Collection %", value: collectionPct, color: theme.accent },
+                          { label:"Contactability %", value: row.contactability, color: theme.accent2 },
+                          { label:"First Bounce %", value: row.femi, color: "#EF4444" },
+                        ];
+
+                        return (
+                          <div key={row.month} style={{ minWidth:68, flex:"0 0 auto" }}>
+                            <div style={{ height:220, display:"flex", alignItems:"flex-end", justifyContent:"center", gap:6 }}>
+                              {series.map((bar, idx) => (
+                                <div key={idx} style={{ width:14, borderRadius:"8px 8px 3px 3px", height:`${Math.max(10, bar.value * 2)}px`, background: bar.color, boxShadow:`0 6px 16px ${bar.color}33`, position:"relative" }} title={`${bar.label}: ${bar.value.toFixed(1)}%`}>
+                                  <span style={{ position:"absolute", top:-16, left:"50%", transform:"translateX(-50%)", fontSize:9, color:bar.color, fontWeight:700, whiteSpace:"nowrap" }}>{bar.value.toFixed(1)}%</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ marginTop:8, textAlign:"center", fontSize:11, fontWeight:700, color: theme.text }}>
+                              <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:11, fontWeight:700 }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display:"flex", gap:14, flexWrap:"wrap", marginTop:12 }}>
+                {[
+                  { label:"Collection %", color: theme.accent },
+                  { label:"Contactability %", color: theme.accent2 },
+                  { label:"First Bounce %", color: "#EF4444" },
+                ].map((l, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:7, fontSize:11, color: theme.subtext, padding:"4px 8px", border:`1px solid ${theme.border}`, borderRadius:16 }}>
+                    <span style={{ width:10, height:10, borderRadius:2, background:l.color, display:"inline-block" }} />
+                    {l.label}
+                  </div>
+                ))}
+              </div>
             </Panel>
 
             <Panel title="Collections Month-wise Table" subtitle="Monthly disbursal, bounce, bucket, and contactability view" theme={theme} style={{ marginTop:14 }}>
