@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
+const buildVintageCurve = (start, growth) =>
+  Array.from({ length: 36 }, (_, i) => Number((start + i * growth + Math.sin(i / 3) * 0.08).toFixed(2)));
+
 // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
   meta: { companyName: "FinServe NBFC Ltd", reportDate: "Feb 2026" },
@@ -85,6 +88,14 @@ const DEFAULT_DATA = {
     { month: "Dec", disbursal: 680, femi: 8.6, currentPOS: 5280, bucketX: 318, bucket1: 169, bucket2: 93, bucket3: 69, contactability: 88.5 },
     { month: "Jan", disbursal: 750, femi: 9.0, currentPOS: 5480, bucketX: 348, bucket1: 184, bucket2: 102, bucket3: 76, contactability: 88.3 },
   ],
+  creditQualityCustomQuery: [
+    { disbursement_month: "2023-01-01", loans: 1620, users: 1305, disbursed_value_cr: 21.59, disbursed_value: 215930324, m: [0.00, 0.26, 0.47, 0.63, 0.78, 1.12, 1.33, 1.47, 1.58, 2.04, 2.11, 2.58, 3.03, 3.29, 3.48, 3.54, 3.56, 3.79, 3.89, 4.14, 4.41, 4.38, 4.63, 4.88, 4.99, 5.20, 5.26, 5.36, 5.50, 5.50, 5.52, 5.57, 5.52, 5.57, 5.56, 5.73] },
+    { disbursement_month: "2023-02-01", loans: 2211, users: 1745, disbursed_value_cr: 27.38, disbursed_value: 273791890.65, m: buildVintageCurve(0.10, 0.15) },
+    { disbursement_month: "2023-03-01", loans: 2727, users: 2151, disbursed_value_cr: 30.51, disbursed_value: 305122421, m: buildVintageCurve(0.23, 0.16) },
+    { disbursement_month: "2023-04-01", loans: 3920, users: 3026, disbursed_value_cr: 44.25, disbursed_value: 442488748, m: buildVintageCurve(0.38, 0.14) },
+    { disbursement_month: "2023-05-01", loans: 4779, users: 3643, disbursed_value_cr: 48.22, disbursed_value: 482211575, m: buildVintageCurve(0.23, 0.145) },
+    { disbursement_month: "2023-06-01", loans: 5893, users: 4415, disbursed_value_cr: 54.14, disbursed_value: 541359728, m: buildVintageCurve(0.21, 0.14) },
+  ],
   productMix: [
     { product: "Home Loans",      aum: 1420, pct: 29.5, npa: 2.1 },
     { product: "Business Loans",  aum: 980,  pct: 20.3, npa: 4.2 },
@@ -130,10 +141,18 @@ const DEFAULT_DATA = {
     debtEquity: 4.8, borrowingCost: 9.2,
     bankLines: 42.6, ncd: 38.2, ecb: 10.8, cp: 8.4,
   },
+  callingFeedback: [
+    { userId: "U100231", agent: "Ritika Sharma", calledAt: "2026-02-10 11:12", response: "PTP" },
+    { userId: "U100498", agent: "Vikas Mehta",   calledAt: "2026-02-10 12:46", response: "RNR" },
+    { userId: "U100774", agent: "Aman Verma",    calledAt: "2026-02-10 14:09", response: "Paid" },
+    { userId: "U101023", agent: "Ritika Sharma", calledAt: "2026-02-10 16:31", response: "PTP" },
+    { userId: "U101447", agent: "Neha Soni",     calledAt: "2026-02-11 10:03", response: "RNR" },
+    { userId: "U101908", agent: "Vikas Mehta",   calledAt: "2026-02-11 11:28", response: "Paid" },
+  ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
     agingBucket: true, profitability: true, creditQuality: true,
-    collections: true, liquidity: true,
+    collections: true, liquidity: true, callingFeedback: true,
   },
   selectedLender: "ALL", // ALL / CS / IDFC / InCred
 };
@@ -157,6 +176,7 @@ const THEMES = {
   slate:    { bg:"#0F1117", card:"#161B22", border:"#21262D", text:"#E6EDF3", subtext:"#7D8590", accent:"#58A6FF", accent2:"#3FB950", name:"GitHub Slate"       },
   ember:    { bg:"#0D0905", card:"#150F08", border:"#2A1F12", text:"#F5E6D0", subtext:"#8B7355", accent:"#F97316", accent2:"#EAB308", name:"Ember Gold"         },
   forest:   { bg:"#050D0A", card:"#0A1610", border:"#14261E", text:"#D4EDDA", subtext:"#4A7C59", accent:"#22C55E", accent2:"#06B6D4", name:"Forest Green"       },
+  indmoney: { bg:"#041512", card:"#0A221C", border:"#1A3B33", text:"#EAFBF6", subtext:"#8FB8AB", accent:"#FFD60A", accent2:"#D4A017", name:"INDmoney"           },
 };
 
 // ─── INLINE EDITABLE NUMBER ───────────────────────────────────────────────────
@@ -341,7 +361,10 @@ export default function App() {
   );
 
   const pv   = data.panelVisibility;
-  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
+  const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
+  const callingFeedbackRows = data.callingFeedback || DEFAULT_DATA.callingFeedback || [];
+  const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
+  const NAV_TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity","Calling feedback"];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -419,7 +442,7 @@ export default function App() {
 
         {/* ── TAB BAR ── */}
         <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${theme.border}`, marginBottom:18, overflowX:"auto" }}>
-          {TABS.map((tab, i) => (
+          {NAV_TABS.map((tab, i) => (
             <button key={i} onClick={() => setActiveTab(i)} style={{ padding:"10px 18px", fontSize:12, fontWeight:600, border:"none", cursor:"pointer", background:"transparent", whiteSpace:"nowrap", color: activeTab===i ? theme.accent : theme.subtext, borderBottom: activeTab===i ? `2px solid ${theme.accent}` : "2px solid transparent" }}>
               {tab}
             </button>
@@ -506,27 +529,38 @@ export default function App() {
 
             {/* Row: Lender Mix + New vs Repeat */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-              <Panel title="Lender-wise Portfolio Mix" subtitle="Click labels & % to edit" theme={theme}>
-                <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                  <Donut segments={data.lenderMix.map(p=>({value:p.share}))} size={100} accent={theme.accent} accent2={theme.accent2} />
-                  <div style={{ flex:1 }}>
-                    {data.lenderMix.map((p, i) => {
-                      const clrs = [theme.accent, theme.accent2,"#F59E0B","#EF4444"];
-                      return (
-                        <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                          <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                            <div style={{ width:7, height:7, borderRadius:"50%", background: clrs[i] }} />
-                            <span style={{ fontSize:10, color: theme.subtext }}>
-                              <EditableText value={p.lender} onChange={v=>update(`lenderMix[${i}].lender`,v)} style={{ fontSize:10, color: theme.subtext }} />
-                            </span>
-                          </div>
-                          <span style={{ fontSize:10, fontWeight:700, color: theme.text }}>
-                            <EditableValue value={p.share} onChange={v=>update(`lenderMix[${i}].share`,v)} fontSize={10} color={theme.text} suffix="%" />
-                          </span>
+              <Panel title="Lender-wise Portfolio Mix" subtitle="Month-wise stacked lender contribution" theme={theme}>
+                <div style={{ display:"flex", alignItems:"flex-end", gap:6, height:150 }}>
+                  {data.monthly.map((total, mi) => {
+                    const maxTotal = Math.max(...data.monthly);
+                    const h = (total / maxTotal) * 120;
+                    const clrs = [theme.accent, theme.accent2, "#F59E0B", "#EF4444", "#A855F7"];
+                    return (
+                      <div key={mi} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                        <div style={{ fontSize:7, color: theme.subtext, marginBottom:2 }}>₹{total}</div>
+                        <div style={{ width:"88%", height:h, display:"flex", flexDirection:"column-reverse", borderRadius:"4px 4px 0 0", overflow:"hidden", background: theme.border }}>
+                          {data.lenderMix.map((l, li) => (
+                            <div key={li} title={`${l.lender}: ${(total * l.share / 100).toFixed(1)} Cr`} style={{ height:`${l.share}%`, background: clrs[li % clrs.length] }} />
+                          ))}
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div style={{ fontSize:7, color: theme.subtext, marginTop:3 }}>{data.months[mi]}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:10 }}>
+                  {data.lenderMix.map((p, i) => {
+                    const clrs = [theme.accent, theme.accent2, "#F59E0B", "#EF4444", "#A855F7"];
+                    return (
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                        <div style={{ width:9, height:9, borderRadius:2, background: clrs[i % clrs.length] }} />
+                        <span style={{ fontSize:10, color: theme.subtext }}>
+                          <EditableText value={p.lender} onChange={v=>update(`lenderMix[${i}].lender`,v)} style={{ fontSize:10, color: theme.subtext }} />
+                        </span>
+                        <span style={{ fontSize:10, color: theme.text }}>(<EditableValue value={p.share} onChange={v=>update(`lenderMix[${i}].share`,v)} fontSize={10} color={theme.text} suffix="%" />)</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </Panel>
 
@@ -718,40 +752,33 @@ export default function App() {
                   })}
                 </Panel>
               )}
-
-              <Panel title="NPA by Product" subtitle="Click values to edit" theme={theme}>
-                {data.productMix.map((p, i) => {
-                  const c = npaColor(p.npa);
-                  return (
-                    <div key={i} style={{ marginBottom:12 }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
-                        <span style={{ fontSize:12, color: theme.subtext }}>
-                          <EditableText value={p.product} onChange={v=>update(`productMix[${i}].product`,v)} style={{ fontSize:12, color: theme.subtext }} />
-                        </span>
-                        <span style={{ fontSize:12, fontWeight:700, color: c }}>
-                          <EditableValue value={p.npa} onChange={v=>update(`productMix[${i}].npa`,v)} fontSize={12} color={c} suffix="%" />
-                        </span>
-                      </div>
-                      <div style={{ background: theme.border, borderRadius:4, height:8, overflow:"hidden" }}>
-                        <div style={{ width:`${(p.npa/10)*100}%`, background: c, height:"100%", borderRadius:4 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </Panel>
             </div>
 
-            {/* Placeholder for Redshift query view */}
-            <Panel title="Custom Query View" subtitle="Bring your Redshift query results here" theme={theme}>
-              <div style={{ padding:"40px 20px", textAlign:"center", background: theme.bg, borderRadius:10 }}>
-                <div style={{ fontSize:32, marginBottom:12 }}>📊</div>
-                <div style={{ color: theme.subtext, fontSize:13 }}>
-                  Connect your Redshift query output here.<br/>
-                  This panel will display the results from your custom lending analytics query.
-                </div>
-                <div style={{ marginTop:16, padding:"8px 16px", background: theme.accent+"22", borderRadius:8, fontSize:11, color: theme.accent, display:"inline-block" }}>
-                  Query placeholder - add your data connection
-                </div>
+            <Panel title="Custom Query View" subtitle="Credit quality vintage by disbursement month" theme={theme}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", minWidth:2600, fontSize:11 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      {["disbursement_month", "loans", "users", "disbursed_value_cr", "disbursed_value", ...Array.from({ length: 36 }, (_, idx) => `m${idx + 1}`)].map((h) => (
+                        <th key={h} style={{ padding:"10px 10px", textAlign:"left", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap", position:"sticky", top:0, background:theme.bg }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {creditQualityRows.map((row, ri) => (
+                      <tr key={`${row.disbursement_month || "row"}-${ri}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"9px 10px", color:theme.text, whiteSpace:"nowrap" }}>{row.disbursement_month}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.loans.toLocaleString()}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.users.toLocaleString()}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value_cr.toFixed(2)}</td>
+                        <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        {Array.from({ length: 36 }, (_, mi) => row.m?.[mi]).map((value, mi) => (
+                          <td key={mi} style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{value || value === 0 ? Number(value).toFixed(2) : ""}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </Panel>
           </div>
@@ -815,6 +842,77 @@ export default function App() {
                   </div>
                 );
               })}
+            </Panel>
+
+            <Panel title="Collections Bucket Trend — Monthly Column View" subtitle="Bucket-wise month-on-month users" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                {[
+                  { label:"Bucket X (DPD 1-30)", key:"bucketX", color: theme.accent },
+                  { label:"Bucket 1 (DPD 31-60)", key:"bucket1", color: theme.accent2 },
+                  { label:"Bucket 2 (DPD 61-90)", key:"bucket2", color: "#F59E0B" },
+                  { label:"Bucket 3 (DPD 90+)", key:"bucket3", color: "#EF4444" },
+                ].map((cfg, ci) => {
+                  const maxValue = Math.max(...collectionsMonthlyRows.map(r => r[cfg.key] || 0), 1);
+                  return (
+                    <div key={ci} style={{ background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"10px 10px 8px" }}>
+                      <div style={{ fontSize:11, fontWeight:700, color: cfg.color, marginBottom:8 }}>{cfg.label}</div>
+                      <div style={{ overflowX:"auto" }}>
+                        <div style={{ display:"flex", alignItems:"flex-end", gap:8, minWidth:460, height:170 }}>
+                          {collectionsMonthlyRows.map((row, i) => {
+                            const users = row[cfg.key] || 0;
+                            const h = Math.max(8, (users / maxValue) * 130);
+                            return (
+                              <div key={`${cfg.key}-${i}`} style={{ flex:1, minWidth:30, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                                <div style={{ fontSize:9, color: theme.subtext, marginBottom:4 }}>{users}</div>
+                                <div title={`${row.month}: ${users} users`} style={{ width:"75%", height:h, background:cfg.color, borderRadius:"6px 6px 2px 2px", boxShadow:`0 4px 10px ${cfg.color}33` }} />
+                                <div style={{ fontSize:9, color: theme.subtext, marginTop:4 }}>{row.month}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
+
+            <Panel title="Collections Month-wise Table" subtitle="Transposed monthly view" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>Metric</th>
+                      {collectionsMonthlyRows.map((row, i) => (
+                        <th key={i} style={{ padding:"10px 12px", textAlign:"center", color: theme.subtext, fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>
+                          <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:10, color: theme.subtext, fontWeight:700 }} />
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label:"Disbursal Amount", key:"disbursal", prefix:"₹" },
+                      { label:"FEMI % (First Bounce)", key:"femi", suffix:"%" },
+                      { label:"Current POS", key:"currentPOS", prefix:"₹" },
+                      { label:"Currently Bucket X (Users in DPD 1-30)", key:"bucketX" },
+                      { label:"Currently Bucket 1 (Users in DPD 31-60)", key:"bucket1" },
+                      { label:"Currently Bucket 2 (Users in DPD 61-90)", key:"bucket2" },
+                      { label:"Currently Bucket 3 (Users in DPD 90+)", key:"bucket3" },
+                      { label:"Contactability %", key:"contactability", suffix:"%" },
+                    ].map((metric, ri) => (
+                      <tr key={ri} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"10px 12px", color: theme.text, fontWeight:600, whiteSpace:"nowrap" }}>{metric.label}</td>
+                        {collectionsMonthlyRows.map((row, i) => (
+                          <td key={i} style={{ padding:"10px 12px", color: theme.subtext, textAlign:"center", whiteSpace:"nowrap" }}>
+                            {metric.prefix || ""}<EditableValue value={row[metric.key]} onChange={v=>update(`collectionsMonthly[${i}].${metric.key}`,v)} fontSize={12} color={theme.subtext} suffix={metric.suffix || ""} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </Panel>
           </div>
         )}
@@ -996,6 +1094,57 @@ export default function App() {
                   );
                 })}
               </Panel>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB 5 — CALLING FEEDBACK
+        ══════════════════════════════════════════════ */}
+        {activeTab === 5 && (pv.callingFeedback ?? true) && (
+          <div>
+            <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {["User ID","Agent called","Calling date and time","User response (RNR / PTP / Paid)"]
+                        .map((h) => (
+                          <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                        ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {callingFeedbackRows.map((row, i) => {
+                      const responseColor = row.response === "Paid" ? theme.accent : row.response === "PTP" ? "#F59E0B" : "#EF4444";
+                      return (
+                        <tr key={`${row.userId}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                          <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.userId}</td>
+                          <td style={{ padding:"12px", color: theme.subtext }}>{row.agent}</td>
+                          <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>{row.calledAt}</td>
+                          <td style={{ padding:"12px" }}>
+                            <span style={{ background:`${responseColor}22`, color: responseColor, padding:"4px 10px", borderRadius:999, fontSize:11, fontWeight:700 }}>{row.response}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginTop:14 }}>
+              {[
+                { label:"Total Calls", value: callingFeedbackRows.length, color: theme.accent2, suffix: "" },
+                { label:"PTP", value: callingFeedbackRows.filter(r => r.response === "PTP").length, color: "#F59E0B", suffix: "" },
+                { label:"Paid", value: callingFeedbackRows.filter(r => r.response === "Paid").length, color: theme.accent, suffix: "" },
+                { label:"RNR", value: callingFeedbackRows.filter(r => r.response === "RNR").length, color: "#EF4444", suffix: "" },
+              ].map((k, i) => (
+                <div key={i} style={{ background: theme.card, border:`1px solid ${k.color}33`, borderRadius:12, padding:"14px 16px" }}>
+                  <div style={{ fontSize:10, color: theme.subtext, textTransform:"uppercase", letterSpacing:"0.06em", fontWeight:700 }}>{k.label}</div>
+                  <div style={{ fontSize:24, fontWeight:800, color: k.color, marginTop:6 }}>{k.value}{k.suffix}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}
