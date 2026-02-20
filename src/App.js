@@ -96,6 +96,34 @@ const DEFAULT_DATA = {
     { disbursement_month: "2023-05-01", loans: 4779, users: 3643, disbursed_value_cr: 48.22, disbursed_value: 482211575, m: buildVintageCurve(0.23, 0.145) },
     { disbursement_month: "2023-06-01", loans: 5893, users: 4415, disbursed_value_cr: 54.14, disbursed_value: 541359728, m: buildVintageCurve(0.21, 0.14) },
   ],
+  creditQualitySummaryMonthly: [
+    { month: "Jan", disbursalAmount: 750, femi: 9.0, firstEmi30Plus: 4.8, nonStarterPct: 2.3 },
+    { month: "Feb", disbursalAmount: 320, femi: 7.8, firstEmi30Plus: 4.1, nonStarterPct: 1.8 },
+    { month: "Mar", disbursalAmount: 420, femi: 8.2, firstEmi30Plus: 4.3, nonStarterPct: 1.9 },
+    { month: "Apr", disbursalAmount: 380, femi: 7.5, firstEmi30Plus: 4.0, nonStarterPct: 1.7 },
+    { month: "May", disbursalAmount: 510, femi: 8.5, firstEmi30Plus: 4.6, nonStarterPct: 2.0 },
+    { month: "Jun", disbursalAmount: 480, femi: 8.1, firstEmi30Plus: 4.4, nonStarterPct: 1.9 },
+    { month: "Jul", disbursalAmount: 560, femi: 8.7, firstEmi30Plus: 4.9, nonStarterPct: 2.1 },
+    { month: "Aug", disbursalAmount: 620, femi: 9.1, firstEmi30Plus: 5.2, nonStarterPct: 2.4 },
+    { month: "Sep", disbursalAmount: 580, femi: 8.4, firstEmi30Plus: 4.8, nonStarterPct: 2.2 },
+    { month: "Oct", disbursalAmount: 640, femi: 8.9, firstEmi30Plus: 5.1, nonStarterPct: 2.3 },
+    { month: "Nov", disbursalAmount: 710, femi: 9.3, firstEmi30Plus: 5.4, nonStarterPct: 2.5 },
+    { month: "Dec", disbursalAmount: 680, femi: 8.6, firstEmi30Plus: 5.0, nonStarterPct: 2.2 },
+  ],
+  creditQualityPosMonthly: [
+    { month: "Jan", currentPOS: 5480, currentBucket: 4770, bucketX: 348, bucket1: 184, bucket2: 102, bucket3: 76 },
+    { month: "Feb", currentPOS: 2850, currentBucket: 2465, bucketX: 185, bucket1: 98, bucket2: 54, bucket3: 42 },
+    { month: "Mar", currentPOS: 3120, currentBucket: 2693, bucketX: 205, bucket1: 112, bucket2: 62, bucket3: 48 },
+    { month: "Apr", currentPOS: 3340, currentBucket: 2934, bucketX: 198, bucket1: 105, bucket2: 58, bucket3: 45 },
+    { month: "May", currentPOS: 3680, currentBucket: 3187, bucketX: 242, bucket1: 128, bucket2: 71, bucket3: 52 },
+    { month: "Jun", currentPOS: 3920, currentBucket: 3447, bucketX: 235, bucket1: 121, bucket2: 68, bucket3: 49 },
+    { month: "Jul", currentPOS: 4180, currentBucket: 3634, bucketX: 268, bucket1: 142, bucket2: 78, bucket3: 58 },
+    { month: "Aug", currentPOS: 4520, currentBucket: 3916, bucketX: 295, bucket1: 158, bucket2: 87, bucket3: 64 },
+    { month: "Sep", currentPOS: 4680, currentBucket: 4111, bucketX: 278, bucket1: 148, bucket2: 82, bucket3: 61 },
+    { month: "Oct", currentPOS: 4850, currentBucket: 4228, bucketX: 305, bucket1: 162, bucket2: 89, bucket3: 66 },
+    { month: "Nov", currentPOS: 5120, currentBucket: 4443, bucketX: 332, bucket1: 176, bucket2: 97, bucket3: 72 },
+    { month: "Dec", currentPOS: 5280, currentBucket: 4631, bucketX: 318, bucket1: 169, bucket2: 93, bucket3: 69 },
+  ],
   productMix: [
     { product: "Home Loans",      aum: 1420, pct: 29.5, npa: 2.1 },
     { product: "Business Loans",  aum: 980,  pct: 20.3, npa: 4.2 },
@@ -380,6 +408,11 @@ export default function App() {
 
   const pv   = data.panelVisibility;
   const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
+  const monthOrder = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const creditQualitySummaryRows = data.creditQualitySummaryMonthly || DEFAULT_DATA.creditQualitySummaryMonthly || [];
+  const creditQualityPosRows = data.creditQualityPosMonthly || DEFAULT_DATA.creditQualityPosMonthly || [];
+  const summaryByMonth = monthOrder.map((m) => creditQualitySummaryRows.find((r) => r.month === m) || {});
+  const posByMonth = monthOrder.map((m) => creditQualityPosRows.find((r) => r.month === m) || {});
   const callingFeedbackRows = data.callingFeedback || DEFAULT_DATA.callingFeedback || [];
   const userLevelCollectionRows = data.userLevelCollections || DEFAULT_DATA.userLevelCollections || [];
   const agentPerformanceRows = data.agentPerformance || DEFAULT_DATA.agentPerformance || [];
@@ -796,6 +829,72 @@ export default function App() {
                         <td style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursed_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         {Array.from({ length: 36 }, (_, mi) => row.m?.[mi]).map((value, mi) => (
                           <td key={mi} style={{ padding:"9px 10px", color:theme.subtext, whiteSpace:"nowrap" }}>{value || value === 0 ? Number(value).toFixed(2) : ""}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Summary" subtitle="Month-wise disbursal and first EMI quality metrics" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11, minWidth:1400 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap", position:"sticky", left:0, background:theme.bg, zIndex:2 }}>Metric</th>
+                      {monthOrder.map((m) => (
+                        <th key={m} style={{ padding:"10px 12px", textAlign:"center", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap" }}>{m}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label:"Disbursal amount (Cr)", key:"disbursalAmount", suffix:"" },
+                      { label:"FEMI", key:"femi", suffix:"%" },
+                      { label:"First EMI 30+", key:"firstEmi30Plus", suffix:"%" },
+                      { label:"Non starter %", key:"nonStarterPct", suffix:"%" },
+                    ].map((metric) => (
+                      <tr key={metric.key} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"10px 12px", color:theme.text, fontWeight:600, position:"sticky", left:0, background:theme.card, zIndex:1, whiteSpace:"nowrap" }}>{metric.label}</td>
+                        {summaryByMonth.map((row, i) => (
+                          <td key={`${metric.key}-${monthOrder[i]}`} style={{ padding:"10px 12px", textAlign:"center", color:theme.subtext, whiteSpace:"nowrap" }}>
+                            {typeof row[metric.key] === "number" ? `${row[metric.key].toFixed(metric.suffix ? 1 : 0)}${metric.suffix}` : "-"}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="POS Bucket Split" subtitle="Month-wise current POS and DPD bucket distribution" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11, minWidth:1600 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap", position:"sticky", left:0, background:theme.bg, zIndex:2 }}>Metric</th>
+                      {monthOrder.map((m) => (
+                        <th key={m} style={{ padding:"10px 12px", textAlign:"center", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap" }}>{m}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label:"Current POS", key:"currentPOS" },
+                      { label:"POS - No DPD (Current Bucket)", key:"currentBucket" },
+                      { label:"POS - DPD 1 - 30 (Bucket X)", key:"bucketX" },
+                      { label:"POS - DPD 31 - 60 (Bucket 1)", key:"bucket1" },
+                      { label:"POS - DPD 61 - 90 (Bucket 2)", key:"bucket2" },
+                      { label:"POS - DPD 90+ (Bucket 3)", key:"bucket3" },
+                    ].map((metric) => (
+                      <tr key={metric.key} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"10px 12px", color:theme.text, fontWeight:600, position:"sticky", left:0, background:theme.card, zIndex:1, whiteSpace:"nowrap" }}>{metric.label}</td>
+                        {posByMonth.map((row, i) => (
+                          <td key={`${metric.key}-${monthOrder[i]}`} style={{ padding:"10px 12px", textAlign:"center", color:theme.subtext, whiteSpace:"nowrap" }}>
+                            {typeof row[metric.key] === "number" ? row[metric.key].toLocaleString() : "-"}
+                          </td>
                         ))}
                       </tr>
                     ))}
