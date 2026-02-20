@@ -149,6 +149,24 @@ const DEFAULT_DATA = {
     { userId: "U101447", agent: "Neha Soni",     calledAt: "2026-02-11 10:03", response: "RNR", timesCalled: 2, maxDpd: 35, amountOverdue: 0.44, totalOutstanding: 2.58 },
     { userId: "U101908", agent: "Vikas Mehta",   calledAt: "2026-02-11 11:28", response: "Paid", timesCalled: 1, maxDpd: 19, amountOverdue: 0.12, totalOutstanding: 1.27 },
   ],
+  userLevelCollections: [
+    { userId: "U100231", timesCalled: 2, maxDpd: 41, amountOverdue: 0.38, totalOutstanding: 2.14, lastAgentCalled: "Ritika Sharma", callDateTime: "2026-02-10 11:12", userResponse: "PTP" },
+    { userId: "U100498", timesCalled: 3, maxDpd: 58, amountOverdue: 0.62, totalOutstanding: 3.71, lastAgentCalled: "Vikas Mehta", callDateTime: "2026-02-10 12:46", userResponse: "RNR" },
+    { userId: "U100774", timesCalled: 1, maxDpd: 24, amountOverdue: 0.19, totalOutstanding: 1.62, lastAgentCalled: "Aman Verma", callDateTime: "2026-02-10 14:09", userResponse: "Paid" },
+    { userId: "U101023", timesCalled: 4, maxDpd: 73, amountOverdue: 0.91, totalOutstanding: 4.86, lastAgentCalled: "Ritika Sharma", callDateTime: "2026-02-10 16:31", userResponse: "PTP" },
+  ],
+  agentPerformance: [
+    { agentName: "Ritika Sharma", casesGiven: 124, usersConnected: 91, amountRecovered: 1.94 },
+    { agentName: "Vikas Mehta", casesGiven: 108, usersConnected: 76, amountRecovered: 1.41 },
+    { agentName: "Aman Verma", casesGiven: 96, usersConnected: 63, amountRecovered: 1.09 },
+    { agentName: "Neha Soni", casesGiven: 88, usersConnected: 58, amountRecovered: 0.94 },
+  ],
+  fieldAgencyCollectionsPerformance: [
+    { city: "Mumbai", casesShared: 215, overdueAmount: 3.42 },
+    { city: "Delhi", casesShared: 178, overdueAmount: 2.96 },
+    { city: "Bengaluru", casesShared: 142, overdueAmount: 2.18 },
+    { city: "Pune", casesShared: 101, overdueAmount: 1.37 },
+  ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
     agingBucket: true, profitability: true, creditQuality: true,
@@ -363,8 +381,11 @@ export default function App() {
   const pv   = data.panelVisibility;
   const creditQualityRows = data.creditQualityCustomQuery || DEFAULT_DATA.creditQualityCustomQuery || [];
   const callingFeedbackRows = data.callingFeedback || DEFAULT_DATA.callingFeedback || [];
+  const userLevelCollectionRows = data.userLevelCollections || DEFAULT_DATA.userLevelCollections || [];
+  const agentPerformanceRows = data.agentPerformance || DEFAULT_DATA.agentPerformance || [];
+  const fieldAgencyRows = data.fieldAgencyCollectionsPerformance || DEFAULT_DATA.fieldAgencyCollectionsPerformance || [];
   const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
-  const NAV_TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity","Calling feedback"];
+  const NAV_TABS = ["Overview","Credit Quality","Collections","User level collection","Agent Performance","Field agency collections performance","Product Mix","Liquidity","Calling feedback"];
   const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -998,7 +1019,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 3 — PRODUCT MIX (unchanged)
         ══════════════════════════════════════════════ */}
-        {activeTab === 3 && (
+        {activeTab === 6 && (
           <div>
             <Panel title="Product Portfolio — Full Detail" subtitle="Click any cell to edit" theme={theme} style={{ marginBottom:14 }}>
               <div style={{ overflowX:"auto" }}>
@@ -1082,10 +1103,116 @@ export default function App() {
           </div>
         )}
 
+
+        {/* ══════════════════════════════════════════════
+            TAB 3 — USER LEVEL COLLECTION
+        ══════════════════════════════════════════════ */}
+        {activeTab === 3 && (
+          <div>
+            <Panel title="User level collection" subtitle="User-wise collections and calling summary" theme={theme}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {[
+                        "User ID",
+                        "Number of times called",
+                        "Current max DPD",
+                        "Amount overdue",
+                        "Total Amount o/s",
+                        "Last agent called",
+                        "Call date and time",
+                        "User response",
+                      ].map((h) => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userLevelCollectionRows.map((row, i) => (
+                      <tr key={`${row.userId}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.userId}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.timesCalled}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.maxDpd}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.amountOverdue === "number" ? row.amountOverdue.toFixed(2) : "-"}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.totalOutstanding === "number" ? row.totalOutstanding.toFixed(2) : "-"}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.lastAgentCalled}</td>
+                        <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>{row.callDateTime}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.userResponse}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB 4 — AGENT PERFORMANCE
+        ══════════════════════════════════════════════ */}
+        {activeTab === 4 && (
+          <div>
+            <Panel title="Agent Performance" subtitle="Agent-wise collections performance" theme={theme}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:900 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {["Agent Name", "Cases given", "Users connected", "Amount recovered"].map((h) => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {agentPerformanceRows.map((row, i) => (
+                      <tr key={`${row.agentName}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.agentName}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.casesGiven}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.usersConnected}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.amountRecovered === "number" ? row.amountRecovered.toFixed(2) : "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB 5 — FIELD AGENCY COLLECTIONS PERFORMANCE
+        ══════════════════════════════════════════════ */}
+        {activeTab === 5 && (
+          <div>
+            <Panel title="Field agency collections performance" subtitle="City-wise field agency coverage" theme={theme}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:900 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {["City", "No. of cases shared", "Overdue amount"].map((h) => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fieldAgencyRows.map((row, i) => (
+                      <tr key={`${row.city}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.city}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.casesShared}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.overdueAmount === "number" ? row.overdueAmount.toFixed(2) : "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          </div>
+        )}
+
         {/* ══════════════════════════════════════════════
             TAB 4 — LIQUIDITY & CAPITAL (unchanged)
         ══════════════════════════════════════════════ */}
-        {activeTab === 4 && pv.liquidity && (
+        {activeTab === 7 && pv.liquidity && (
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
               {[
@@ -1179,7 +1306,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 5 — CALLING FEEDBACK
         ══════════════════════════════════════════════ */}
-        {activeTab === 5 && (pv.callingFeedback ?? true) && (
+        {activeTab === 8 && (pv.callingFeedback ?? true) && (
           <div>
             <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
               <div style={{ overflowX:"auto" }}>
