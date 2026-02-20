@@ -236,6 +236,31 @@ const THEMES = {
   indmoney: { bg:"#041512", card:"#0A221C", border:"#1A3B33", text:"#EAFBF6", subtext:"#8FB8AB", accent:"#FFD60A", accent2:"#D4A017", name:"INDmoney"           },
 };
 
+const COLLECTIONS_SUMMARY_MONTHS = [
+  { label: "May 25", date: "2025-05-01" },
+  { label: "Jun 25", date: "2025-06-01" },
+  { label: "Jul 25", date: "2025-07-01" },
+  { label: "Aug 25", date: "2025-08-01" },
+  { label: "Sep 25", date: "2025-09-01" },
+  { label: "Oct 25", date: "2025-10-01" },
+  { label: "Nov 25", date: "2025-11-01" },
+  { label: "Dec 25", date: "2025-12-01" },
+  { label: "Jan 26", date: "2026-01-01" },
+];
+
+const ROLLBACK_ROLLFORWARD_NO_DPD_ROWS = [
+  { srNo: "1", label: "1. Month Start user count", values: ["558 (100%)", "1536 (100%)", "2359 (100%)", "3217 (100%)", "3947 (100%)", "4732 (100%)", "5481 (100%)", "6156 (100%)", "6770 (100%)"] },
+  { srNo: "2", label: "3. Stable", values: ["539 (96.6%)", "1484 (96.6%)", "2285 (96.9%)", "3102 (96.4%)", "3813 (96.6%)", "4612 (97.5%)", "5296 (96.6%)", "6007 (97.6%)", "6571 (97.1%)"] },
+  { srNo: "3", label: "4. Roll forward", values: ["19 (3.4%)", "52 (3.4%)", "74 (3.1%)", "115 (3.6%)", "134 (3.4%)", "120 (2.5%)", "185 (3.4%)", "149 (2.4%)", "199 (2.9%)"] },
+];
+
+const ROLLBACK_ROLLFORWARD_DPD_1_30_ROWS = [
+  { srNo: "1", label: "1. Month Start user count", values: ["7 (100%)", "58 (100%)", "90 (100%)", "125 (100%)", "167 (100%)", "222 (100%)", "201 (100%)", "288 (100%)", "251 (100%)"] },
+  { srNo: "2", label: "2a. Roll back no DPD", values: ["6 (85.7%)", "39 (67.2%)", "57 (63.3%)", "84 (67.2%)", "96 (57.5%)", "143 (64.4%)", "99 (49.3%)", "160 (55.6%)", "124 (49.4%)"] },
+  { srNo: "3", label: "4. Roll forward", values: ["1 (14.3%)", "5 (8.6%)", "5 (5.6%)", "12 (9.6%)", "16 (9.6%)", "15 (6.8%)", "14 (7%)", "33 (11.5%)", "26 (10.4%)"] },
+  { srNo: "4", label: "3. Stable", values: ["(%)", "14 (24.1%)", "28 (31.1%)", "29 (23.2%)", "55 (32.9%)", "64 (28.8%)", "88 (43.8%)", "95 (33%)", "101 (40.2%)"] },
+];
+
 // ─── INLINE EDITABLE NUMBER ───────────────────────────────────────────────────
 function EditableValue({ value, onChange, prefix="", suffix="", fontSize=26, color="#fff" }) {
   const [editing, setEditing] = useState(false);
@@ -776,6 +801,7 @@ export default function App() {
                 </table>
               </div>
             </Panel>
+
           </div>
         )}
 
@@ -1163,6 +1189,80 @@ export default function App() {
                               suffix={metric.suffix}
                             />
                           </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Rollback/Rollforward - No DPD summary" subtitle="Reference table from shared snapshot" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"10px 8px", textAlign:"center", color:theme.subtext, fontWeight:700, width:42 }}>#</th>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:190 }}>Month</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={month.label} style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:118 }}>
+                          <div>{month.label}</div>
+                          <div style={{ marginTop:6 }}>{month.date}</div>
+                        </th>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"8px" }} />
+                      <th style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>Status Fin</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={`${month.label}-users`} style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>User Count</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ROLLBACK_ROLLFORWARD_NO_DPD_ROWS.map((row) => (
+                      <tr key={row.srNo} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px", textAlign:"center", color:theme.subtext }}>{row.srNo}</td>
+                        <td style={{ padding:"8px 12px", color:theme.text }}>{row.label}</td>
+                        {row.values.map((value, idx) => (
+                          <td key={`${row.srNo}-${idx}`} style={{ padding:"8px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{value}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Rollback/Rollforward - DPD 1-30 summary" subtitle="Reference table from shared snapshot" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"10px 8px", textAlign:"center", color:theme.subtext, fontWeight:700, width:42 }}>#</th>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:190 }}>Month</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={`dpd-${month.label}`} style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:118 }}>
+                          <div>{month.label}</div>
+                          <div style={{ marginTop:6 }}>{month.date}</div>
+                        </th>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"8px" }} />
+                      <th style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>Status Fin</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={`dpd-${month.label}-users`} style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>User Count</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ROLLBACK_ROLLFORWARD_DPD_1_30_ROWS.map((row) => (
+                      <tr key={`dpd-row-${row.srNo}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px", textAlign:"center", color:theme.subtext }}>{row.srNo}</td>
+                        <td style={{ padding:"8px 12px", color:theme.text }}>{row.label}</td>
+                        {row.values.map((value, idx) => (
+                          <td key={`dpd-${row.srNo}-${idx}`} style={{ padding:"8px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{value}</td>
                         ))}
                       </tr>
                     ))}
