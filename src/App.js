@@ -124,6 +124,17 @@ const DEFAULT_DATA = {
     { month: "Nov", currentPOS: 5120, currentBucket: 4443, bucketX: 332, bucket1: 176, bucket2: 97, bucket3: 72 },
     { month: "Dec", currentPOS: 5280, currentBucket: 4631, bucketX: 318, bucket1: 169, bucket2: 93, bucket3: 69 },
   ],
+  collectionSummaryTable: [
+    { appScore: "1. Total", disbursedCount: "12,827", disbursedCountShare: "12827 (100%)", disbursedAmountShare: "263.7 (100%)", ats: "206k", averageCreditLimit: "317k", averageCreditUtilisation: "64.9%", averageRoi: "17.3", averageTenure: "34.7", currentOsCount: "9,851", currentOsAmount: "190 (100%)", currentOsAverageRoi: "14.9" },
+    { appScore: "2. 0-1", disbursedCount: "907", disbursedCountShare: "907 (7.1%)", disbursedAmountShare: "20.2 (7.7%)", ats: "223k", averageCreditLimit: "389k", averageCreditUtilisation: "57.3%", averageRoi: "16", averageTenure: "33.7", currentOsCount: "594", currentOsAmount: "12 (6.6%)", currentOsAverageRoi: "12.6" },
+    { appScore: "3. 1-2", disbursedCount: "1,987", disbursedCountShare: "1987 (15.5%)", disbursedAmountShare: "46.2 (17.5%)", ats: "232k", averageCreditLimit: "368k", averageCreditUtilisation: "63.1%", averageRoi: "16.2", averageTenure: "35.3", currentOsCount: "1,447", currentOsAmount: "32 (16.7%)", currentOsAverageRoi: "13.4" },
+    { appScore: "4. 2-3", disbursedCount: "1,603", disbursedCountShare: "1603 (12.5%)", disbursedAmountShare: "35.4 (13.4%)", ats: "221k", averageCreditLimit: "342k", averageCreditUtilisation: "64.7%", averageRoi: "16.9", averageTenure: "34.5", currentOsCount: "1,230", currentOsAmount: "25 (13.3%)", currentOsAverageRoi: "14.5" },
+    { appScore: "5. 3-5", disbursedCount: "2,712", disbursedCountShare: "2712 (21.1%)", disbursedAmountShare: "56 (21.2%)", ats: "207k", averageCreditLimit: "315k", averageCreditUtilisation: "65.6%", averageRoi: "17.4", averageTenure: "35.1", currentOsCount: "2,133", currentOsAmount: "42 (21.9%)", currentOsAverageRoi: "15.5" },
+    { appScore: "6. 5-7", disbursedCount: "1,939", disbursedCountShare: "1939 (15.1%)", disbursedAmountShare: "39.6 (15%)", ats: "204k", averageCreditLimit: "303k", averageCreditUtilisation: "67.4%", averageRoi: "17.7", averageTenure: "34.8", currentOsCount: "1,521", currentOsAmount: "29 (15.2%)", currentOsAverageRoi: "15.4" },
+    { appScore: "7. 7-10", disbursedCount: "1,675", disbursedCountShare: "1675 (13.1%)", disbursedAmountShare: "31 (11.7%)", ats: "185k", averageCreditLimit: "279k", averageCreditUtilisation: "66.2%", averageRoi: "18", averageTenure: "34", currentOsCount: "1,317", currentOsAmount: "23 (11.9%)", currentOsAverageRoi: "15.8" },
+    { appScore: "8. >10", disbursedCount: "2,004", disbursedCountShare: "2004 (15.6%)", disbursedAmountShare: "35.3 (13.4%)", ats: "176k", averageCreditLimit: "261k", averageCreditUtilisation: "67.6%", averageRoi: "18.2", averageTenure: "34.6", currentOsCount: "1,609", currentOsAmount: "27 (14.3%)", currentOsAverageRoi: "16.5" },
+  ],
+
   productMix: [
     { product: "Home Loans",      aum: 1420, pct: 29.5, npa: 2.1 },
     { product: "Business Loans",  aum: 980,  pct: 20.3, npa: 4.2 },
@@ -413,6 +424,7 @@ export default function App() {
   const creditQualityPosRows = data.creditQualityPosMonthly || DEFAULT_DATA.creditQualityPosMonthly || [];
   const summaryByMonth = monthOrder.map((m) => creditQualitySummaryRows.find((r) => r.month === m) || {});
   const posByMonth = monthOrder.map((m) => creditQualityPosRows.find((r) => r.month === m) || {});
+  const collectionSummaryRows = data.collectionSummaryTable || DEFAULT_DATA.collectionSummaryTable || [];
   const callingFeedbackRows = data.callingFeedback || DEFAULT_DATA.callingFeedback || [];
   const userLevelCollectionRows = data.userLevelCollections || DEFAULT_DATA.userLevelCollections || [];
   const agentPerformanceRows = data.agentPerformance || DEFAULT_DATA.agentPerformance || [];
@@ -719,6 +731,51 @@ export default function App() {
                 </Panel>
               )}
             </div>
+
+            <Panel title="Collection summary" subtitle="App score-wise collections distribution" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1700 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {[
+                        "App Score",
+                        "Disbursed Count",
+                        "Disbursed Count Share",
+                        "Disbursed Amount Share (in cr)",
+                        "ATS",
+                        "Average Credit Limit",
+                        "Average Credit Utilisation",
+                        "Average ROI",
+                        "Average Tenure",
+                        "Current OS count",
+                        "Current OS Amount (in cr)",
+                        "Current OS Average ROI",
+                      ].map((h) => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.04em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {collectionSummaryRows.map((row, i) => (
+                      <tr key={`${row.appScore}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"10px 12px", color:theme.text, fontWeight:600, whiteSpace:"nowrap" }}>{row.appScore}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursedCount}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursedCountShare}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.disbursedAmountShare}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.ats}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.averageCreditLimit}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.averageCreditUtilisation}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.averageRoi}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.averageTenure}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.currentOsCount}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.currentOsAmount}</td>
+                        <td style={{ padding:"10px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{row.currentOsAverageRoi}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
           </div>
         )}
 
