@@ -261,6 +261,32 @@ const ROLLBACK_ROLLFORWARD_DPD_1_30_ROWS = [
   { srNo: "4", label: "3. Stable", values: ["(%)", "14 (24.1%)", "28 (31.1%)", "29 (23.2%)", "55 (32.9%)", "64 (28.8%)", "88 (43.8%)", "95 (33%)", "101 (40.2%)"] },
 ];
 
+const CREDIT_QUALITY_DPD_SUMMARY_COLUMNS = [
+  "App Score",
+  "Disbursed Count",
+  "Femi Default Percent",
+  "Femi Default Value Percent",
+  "DPD0 Default Percent",
+  "DPD0 Default Value Percent",
+  "DPD30 Default Percent",
+  "DPD30 Default Value Percent",
+  "DPD60 Default Percent",
+  "DPD60 Default Value Percent",
+  "DPD90 Default Percent",
+  "DPD90 Default Value Percent",
+];
+
+const CREDIT_QUALITY_DPD_SUMMARY_ROWS = [
+  ["1. Total", "12,789", "2.54%", "1.96%", "10.93%", "8.91%", "1.75%", "1.47%", "1.06%", "0.92%", "0.79%", "0.72%"],
+  ["2. 0-1", "905", "1.08%", "1.09%", "6.34%", "6.08%", "0.12%", "0.05%", "0.00%", "0.00%", "0.00%", "0.00%"],
+  ["3. 1-2", "1,979", "1.84%", "1.76%", "8.32%", "7.42%", "1.23%", "1.33%", "0.84%", "0.84%", "0.61%", "0.64%"],
+  ["4. 2-3", "1,600", "2.37%", "1.91%", "10.17%", "8.34%", "1.11%", "0.97%", "0.56%", "0.52%", "0.42%", "0.34%"],
+  ["5. 3-5", "2,704", "2.65%", "2.00%", "11.62%", "9.81%", "1.88%", "1.73%", "1.10%", "0.95%", "0.90%", "0.80%"],
+  ["6. 5-7", "1,937", "2.68%", "1.78%", "11.63%", "8.97%", "1.77%", "1.28%", "1.20%", "0.69%", "0.80%", "0.56%"],
+  ["7. 7-10", "1,669", "3.41%", "2.90%", "13.59%", "11.51%", "2.56%", "2.14%", "1.51%", "1.64%", "1.05%", "1.13%"],
+  ["8. >10", "1,995", "3.05%", "2.10%", "12.38%", "9.32%", "2.67%", "2.17%", "1.61%", "1.52%", "1.28%", "1.35%"],
+];
+
 // ─── INLINE EDITABLE NUMBER ───────────────────────────────────────────────────
 function EditableValue({ value, onChange, prefix="", suffix="", fontSize=26, color="#fff" }) {
   const [editing, setEditing] = useState(false);
@@ -943,6 +969,34 @@ export default function App() {
                         {summaryByMonth.map((row, i) => (
                           <td key={`${metric.key}-${monthOrder[i]}`} style={{ padding:"10px 12px", textAlign:"center", color:theme.subtext, whiteSpace:"nowrap" }}>
                             {typeof row[metric.key] === "number" ? `${row[metric.key].toFixed(metric.suffix ? 1 : 0)}${metric.suffix}` : "-"}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+
+            <Panel title="DPD summary" subtitle="App score-wise default percentages" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11, minWidth:1550 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      {CREDIT_QUALITY_DPD_SUMMARY_COLUMNS.map((column, idx) => (
+                        <th key={column} style={{ padding:"10px 8px", textAlign:"left", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap", position: idx === 0 ? "sticky" : "static", left: idx === 0 ? 0 : undefined, background: idx === 0 ? theme.bg : theme.bg, zIndex: idx === 0 ? 2 : 1 }}>
+                          {column}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CREDIT_QUALITY_DPD_SUMMARY_ROWS.map((row, rowIdx) => (
+                      <tr key={`dpd-summary-row-${rowIdx}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        {row.map((cell, cellIdx) => (
+                          <td key={`dpd-summary-cell-${rowIdx}-${cellIdx}`} style={{ padding:"8px", color: cellIdx === 0 ? theme.text : theme.subtext, fontWeight: cellIdx === 0 ? 600 : 500, whiteSpace:"nowrap", position: cellIdx === 0 ? "sticky" : "static", left: cellIdx === 0 ? 0 : undefined, background: cellIdx === 0 ? theme.card : "transparent", zIndex: cellIdx === 0 ? 1 : 0 }}>
+                            {cell}
                           </td>
                         ))}
                       </tr>
