@@ -236,6 +236,57 @@ const THEMES = {
   indmoney: { bg:"#041512", card:"#0A221C", border:"#1A3B33", text:"#EAFBF6", subtext:"#8FB8AB", accent:"#FFD60A", accent2:"#D4A017", name:"INDmoney"           },
 };
 
+const COLLECTIONS_SUMMARY_MONTHS = [
+  { label: "May 25", date: "2025-05-01" },
+  { label: "Jun 25", date: "2025-06-01" },
+  { label: "Jul 25", date: "2025-07-01" },
+  { label: "Aug 25", date: "2025-08-01" },
+  { label: "Sep 25", date: "2025-09-01" },
+  { label: "Oct 25", date: "2025-10-01" },
+  { label: "Nov 25", date: "2025-11-01" },
+  { label: "Dec 25", date: "2025-12-01" },
+  { label: "Jan 26", date: "2026-01-01" },
+];
+
+const ROLLBACK_ROLLFORWARD_NO_DPD_ROWS = [
+  { srNo: "1", label: "1. Month Start user count", values: ["558 (100%)", "1536 (100%)", "2359 (100%)", "3217 (100%)", "3947 (100%)", "4732 (100%)", "5481 (100%)", "6156 (100%)", "6770 (100%)"] },
+  { srNo: "2", label: "3. Stable", values: ["539 (96.6%)", "1484 (96.6%)", "2285 (96.9%)", "3102 (96.4%)", "3813 (96.6%)", "4612 (97.5%)", "5296 (96.6%)", "6007 (97.6%)", "6571 (97.1%)"] },
+  { srNo: "3", label: "4. Roll forward", values: ["19 (3.4%)", "52 (3.4%)", "74 (3.1%)", "115 (3.6%)", "134 (3.4%)", "120 (2.5%)", "185 (3.4%)", "149 (2.4%)", "199 (2.9%)"] },
+];
+
+const ROLLBACK_ROLLFORWARD_DPD_1_30_ROWS = [
+  { srNo: "1", label: "1. Month Start user count", values: ["7 (100%)", "58 (100%)", "90 (100%)", "125 (100%)", "167 (100%)", "222 (100%)", "201 (100%)", "288 (100%)", "251 (100%)"] },
+  { srNo: "2", label: "2a. Roll back no DPD", values: ["6 (85.7%)", "39 (67.2%)", "57 (63.3%)", "84 (67.2%)", "96 (57.5%)", "143 (64.4%)", "99 (49.3%)", "160 (55.6%)", "124 (49.4%)"] },
+  { srNo: "3", label: "4. Roll forward", values: ["1 (14.3%)", "5 (8.6%)", "5 (5.6%)", "12 (9.6%)", "16 (9.6%)", "15 (6.8%)", "14 (7%)", "33 (11.5%)", "26 (10.4%)"] },
+  { srNo: "4", label: "3. Stable", values: ["(%)", "14 (24.1%)", "28 (31.1%)", "29 (23.2%)", "55 (32.9%)", "64 (28.8%)", "88 (43.8%)", "95 (33%)", "101 (40.2%)"] },
+];
+
+const CREDIT_QUALITY_DPD_SUMMARY_COLUMNS = [
+  "App Score",
+  "Disbursed Count",
+  "Femi Default Percent",
+  "Femi Default Value Percent",
+  "DPD0 Default Percent",
+  "DPD0 Default Value Percent",
+  "DPD30 Default Percent",
+  "DPD30 Default Value Percent",
+  "DPD60 Default Percent",
+  "DPD60 Default Value Percent",
+  "DPD90 Default Percent",
+  "DPD90 Default Value Percent",
+];
+
+const CREDIT_QUALITY_DPD_SUMMARY_ROWS = [
+  ["1. Total", "12,789", "2.54%", "1.96%", "10.93%", "8.91%", "1.75%", "1.47%", "1.06%", "0.92%", "0.79%", "0.72%"],
+  ["2. 0-1", "905", "1.08%", "1.09%", "6.34%", "6.08%", "0.12%", "0.05%", "0.00%", "0.00%", "0.00%", "0.00%"],
+  ["3. 1-2", "1,979", "1.84%", "1.76%", "8.32%", "7.42%", "1.23%", "1.33%", "0.84%", "0.84%", "0.61%", "0.64%"],
+  ["4. 2-3", "1,600", "2.37%", "1.91%", "10.17%", "8.34%", "1.11%", "0.97%", "0.56%", "0.52%", "0.42%", "0.34%"],
+  ["5. 3-5", "2,704", "2.65%", "2.00%", "11.62%", "9.81%", "1.88%", "1.73%", "1.10%", "0.95%", "0.90%", "0.80%"],
+  ["6. 5-7", "1,937", "2.68%", "1.78%", "11.63%", "8.97%", "1.77%", "1.28%", "1.20%", "0.69%", "0.80%", "0.56%"],
+  ["7. 7-10", "1,669", "3.41%", "2.90%", "13.59%", "11.51%", "2.56%", "2.14%", "1.51%", "1.64%", "1.05%", "1.13%"],
+  ["8. >10", "1,995", "3.05%", "2.10%", "12.38%", "9.32%", "2.67%", "2.17%", "1.61%", "1.52%", "1.28%", "1.35%"],
+];
+
 // ─── INLINE EDITABLE NUMBER ───────────────────────────────────────────────────
 function EditableValue({ value, onChange, prefix="", suffix="", fontSize=26, color="#fff" }) {
   const [editing, setEditing] = useState(false);
@@ -776,6 +827,7 @@ export default function App() {
                 </table>
               </div>
             </Panel>
+
           </div>
         )}
 
@@ -917,6 +969,34 @@ export default function App() {
                         {summaryByMonth.map((row, i) => (
                           <td key={`${metric.key}-${monthOrder[i]}`} style={{ padding:"10px 12px", textAlign:"center", color:theme.subtext, whiteSpace:"nowrap" }}>
                             {typeof row[metric.key] === "number" ? `${row[metric.key].toFixed(metric.suffix ? 1 : 0)}${metric.suffix}` : "-"}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+
+            <Panel title="DPD summary" subtitle="App score-wise default percentages" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11, minWidth:1550 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      {CREDIT_QUALITY_DPD_SUMMARY_COLUMNS.map((column, idx) => (
+                        <th key={column} style={{ padding:"10px 8px", textAlign:"left", color:theme.subtext, fontWeight:700, whiteSpace:"nowrap", position: idx === 0 ? "sticky" : "static", left: idx === 0 ? 0 : undefined, background: idx === 0 ? theme.bg : theme.bg, zIndex: idx === 0 ? 2 : 1 }}>
+                          {column}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CREDIT_QUALITY_DPD_SUMMARY_ROWS.map((row, rowIdx) => (
+                      <tr key={`dpd-summary-row-${rowIdx}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        {row.map((cell, cellIdx) => (
+                          <td key={`dpd-summary-cell-${rowIdx}-${cellIdx}`} style={{ padding:"8px", color: cellIdx === 0 ? theme.text : theme.subtext, fontWeight: cellIdx === 0 ? 600 : 500, whiteSpace:"nowrap", position: cellIdx === 0 ? "sticky" : "static", left: cellIdx === 0 ? 0 : undefined, background: cellIdx === 0 ? theme.card : "transparent", zIndex: cellIdx === 0 ? 1 : 0 }}>
+                            {cell}
                           </td>
                         ))}
                       </tr>
@@ -1163,6 +1243,80 @@ export default function App() {
                               suffix={metric.suffix}
                             />
                           </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Rollback/Rollforward - No DPD summary" subtitle="Reference table from shared snapshot" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"10px 8px", textAlign:"center", color:theme.subtext, fontWeight:700, width:42 }}>#</th>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:190 }}>Month</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={month.label} style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:118 }}>
+                          <div>{month.label}</div>
+                          <div style={{ marginTop:6 }}>{month.date}</div>
+                        </th>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"8px" }} />
+                      <th style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>Status Fin</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={`${month.label}-users`} style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>User Count</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ROLLBACK_ROLLFORWARD_NO_DPD_ROWS.map((row) => (
+                      <tr key={row.srNo} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px", textAlign:"center", color:theme.subtext }}>{row.srNo}</td>
+                        <td style={{ padding:"8px 12px", color:theme.text }}>{row.label}</td>
+                        {row.values.map((value, idx) => (
+                          <td key={`${row.srNo}-${idx}`} style={{ padding:"8px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{value}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Rollback/Rollforward - DPD 1-30 summary" subtitle="Reference table from shared snapshot" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"10px 8px", textAlign:"center", color:theme.subtext, fontWeight:700, width:42 }}>#</th>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:190 }}>Month</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={`dpd-${month.label}`} style={{ padding:"10px 12px", textAlign:"left", color:theme.subtext, fontWeight:700, minWidth:118 }}>
+                          <div>{month.label}</div>
+                          <div style={{ marginTop:6 }}>{month.date}</div>
+                        </th>
+                      ))}
+                    </tr>
+                    <tr style={{ borderBottom:`1px solid ${theme.border}`, background: theme.bg }}>
+                      <th style={{ padding:"8px" }} />
+                      <th style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>Status Fin</th>
+                      {COLLECTIONS_SUMMARY_MONTHS.map((month) => (
+                        <th key={`dpd-${month.label}-users`} style={{ padding:"8px 12px", textAlign:"left", color:theme.text, fontWeight:700 }}>User Count</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ROLLBACK_ROLLFORWARD_DPD_1_30_ROWS.map((row) => (
+                      <tr key={`dpd-row-${row.srNo}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px", textAlign:"center", color:theme.subtext }}>{row.srNo}</td>
+                        <td style={{ padding:"8px 12px", color:theme.text }}>{row.label}</td>
+                        {row.values.map((value, idx) => (
+                          <td key={`dpd-${row.srNo}-${idx}`} style={{ padding:"8px 12px", color:theme.subtext, whiteSpace:"nowrap" }}>{value}</td>
                         ))}
                       </tr>
                     ))}
