@@ -432,7 +432,14 @@ export default function App() {
   // ── Load from localStorage on mount ──
   useEffect(() => {
     const saved = lsGet(LS_DATA_KEY);
-    setData(saved || DEFAULT_DATA);
+    const hydratedData = saved
+      ? {
+          ...DEFAULT_DATA,
+          ...saved,
+          userWhitelistedByLender: saved.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender,
+        }
+      : DEFAULT_DATA;
+    setData(hydratedData);
     const savedTheme = lsGet(LS_THEME_KEY);
     if (savedTheme && THEMES[savedTheme]) setThemeName(savedTheme);
   }, []);
@@ -492,6 +499,7 @@ export default function App() {
   const agentPerformanceRows = data.agentPerformance || DEFAULT_DATA.agentPerformance || [];
   const fieldAgencyRows = data.fieldAgencyCollectionsPerformance || DEFAULT_DATA.fieldAgencyCollectionsPerformance || [];
   const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
+  const userWhitelistedRows = data.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender || [];
   const NAV_TABS = ["Overview","Credit Quality","Collections","User level collection","Agent Performance","Field agency collections performance","Product Mix","Liquidity","Calling feedback"];
   const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
 
