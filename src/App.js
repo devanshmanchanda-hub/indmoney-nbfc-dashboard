@@ -790,7 +790,7 @@ export default function App() {
 
             </div>
 
-            <Panel title="Collection summary" subtitle="App score-wise collections distribution" theme={theme} style={{ marginTop:14 }}>
+            <Panel title="Disbursal mix by App score" subtitle="App score-wise collections distribution" theme={theme} style={{ marginTop:14 }}>
               <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1700 }}>
                   <thead>
