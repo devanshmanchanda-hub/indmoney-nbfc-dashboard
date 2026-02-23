@@ -1204,59 +1204,75 @@ export default function App() {
             </div>
 
             {/* Collection Funnel */}
-            <Panel title="Collection Funnel" subtitle="Month-wise stage values (numeric)" theme={theme}>
-              <div style={{ overflowX:"auto", background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"12px 12px 10px" }}>
-                <div style={{ minWidth:980 }}>
-                  <div style={{ display:"grid", gridTemplateColumns:"150px repeat(5, minmax(120px, 1fr))", gap:8, marginBottom:8 }}>
-                    <div style={{ fontSize:10, color:theme.subtext, textTransform:"uppercase", letterSpacing:"0.05em", fontWeight:700 }}>Month</div>
-                    {[
-                      { label:"Total Demand", color:theme.accent2 },
-                      { label:"Contactable", color:"#F59E0B" },
-                      { label:"PTP Received", color:"#A855F7" },
-                      { label:"PTP Honored", color:"#F97316" },
-                      { label:"Finally Collected", color:theme.accent },
-                    ].map((stage) => (
-                      <div key={stage.label} style={{ fontSize:10, color:stage.color, textTransform:"uppercase", letterSpacing:"0.05em", fontWeight:700, textAlign:"center" }}>
-                        {stage.label}
+            <Panel title="Collection Funnel" subtitle="5 monthly column charts across key funnel stages" theme={theme}>
+              {(() => {
+                const monthlyFunnel = collectionsMonthlyRows.map((row) => {
+                  const totalDemand = Math.max(0, row.currentPOS || 0);
+                  const contactable = Math.max(0, Math.min(totalDemand, totalDemand * (row.contactability || 0) / 100));
+                  const ptpReceived = Math.max(0, Math.min(totalDemand, contactable * (data.collections.ptp || 0) / 100));
+                  const ptpHonored = Math.max(0, Math.min(totalDemand, ptpReceived * (data.collections.ptpHonored || 0) / 100));
+                  const finallyCollectedPct = Math.max(0, Math.min(100, (row.contactability || 0) - (row.femi || 0) * 1.35));
+                  const finallyCollected = Math.max(0, Math.min(totalDemand, totalDemand * finallyCollectedPct / 100));
+
+                  return {
+                    month: row.month,
+                    totalDemand,
+                    contactable,
+                    ptpReceived,
+                    ptpHonored,
+                    finallyCollected,
+                  };
+                });
+
+                const charts = [
+                  { label:"Total Demand", key:"totalDemand", color:theme.accent2 },
+                  { label:"Contactable", key:"contactable", color:"#F59E0B" },
+                  { label:"PTP Received", key:"ptpReceived", color:"#A855F7" },
+                  { label:"PTP Honored", key:"ptpHonored", color:"#F97316" },
+                  { label:"Finally Collected", key:"finallyCollected", color:theme.accent },
+                ];
+
+                const chartRows = [charts.slice(0, 2), charts.slice(2)];
+
+                return (
+                  <div style={{ display:"grid", gap:14 }}>
+                    {chartRows.map((rowCharts, rowIndex) => (
+                      <div
+                        key={`row-${rowIndex}`}
+                        style={{
+                          display:"grid",
+                          gridTemplateColumns:`repeat(${rowCharts.length}, minmax(320px, 1fr))`,
+                          gap:14,
+                        }}
+                      >
+                        {rowCharts.map((chart) => {
+                        const maxValue = Math.max(...monthlyFunnel.map((row) => row[chart.key] || 0), 1);
+                        return (
+                          <div key={chart.key} style={{ background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"12px 12px 10px" }}>
+                            <div style={{ fontSize:12, fontWeight:800, color:chart.color, marginBottom:10 }}>{chart.label}</div>
+                            <div style={{ fontSize:9, color:theme.subtext, marginBottom:8 }}>Y Axis: Value</div>
+                            <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:220, borderBottom:`1px solid ${theme.border}`, paddingBottom:8 }}>
+                              {monthlyFunnel.map((row, i) => {
+                                const value = row[chart.key] || 0;
+                                const height = Math.max(10, (value / maxValue) * 170);
+                                return (
+                                  <div key={`${chart.key}-${i}`} style={{ flex:1, minWidth:22, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                                    <div style={{ fontSize:9, color:theme.subtext, marginBottom:4 }}>{Math.round(value).toLocaleString()}</div>
+                                    <div title={`${row.month}: ${Math.round(value).toLocaleString()}`} style={{ width:"78%", height, background:chart.color, borderRadius:"6px 6px 2px 2px", boxShadow:`0 4px 10px ${chart.color}33` }} />
+                                    <div style={{ fontSize:9, color:theme.subtext, marginTop:4, textAlign:"center", lineHeight:1.2 }}>{row.month}</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div style={{ fontSize:9, color:theme.subtext, marginTop:6 }}>X Axis: Months</div>
+                          </div>
+                        );
+                        })}
                       </div>
                     ))}
                   </div>
-
-                  <div style={{ display:"grid", gap:8 }}>
-                    {collectionsMonthlyRows.map((row, i) => {
-                      const totalDemand = Math.max(1, row.currentPOS || 0);
-                      const contactable = Math.max(0, Math.min(totalDemand, totalDemand * (row.contactability || 0) / 100));
-                      const ptpReceived = Math.max(0, Math.min(totalDemand, contactable * (data.collections.ptp || 0) / 100));
-                      const ptpHonored = Math.max(0, Math.min(totalDemand, ptpReceived * (data.collections.ptpHonored || 0) / 100));
-                      const finallyCollectedPct = Math.max(0, Math.min(100, (row.contactability || 0) - (row.femi || 0) * 1.35));
-                      const finallyCollected = Math.max(0, Math.min(totalDemand, totalDemand * finallyCollectedPct / 100));
-                      const funnelSeries = [
-                        { label:"Total Demand", value:totalDemand, color:theme.accent2 },
-                        { label:"Contactable", value:contactable, color:"#F59E0B" },
-                        { label:"PTP Received", value:ptpReceived, color:"#A855F7" },
-                        { label:"PTP Honored", value:ptpHonored, color:"#F97316" },
-                        { label:"Finally Collected", value:finallyCollected, color:theme.accent },
-                      ];
-
-                      return (
-                        <div key={`${row.month}-${i}`} style={{ display:"grid", gridTemplateColumns:"150px repeat(5, minmax(120px, 1fr))", gap:8, alignItems:"center" }}>
-                          <div style={{ fontSize:11, fontWeight:700, color:theme.text }}>
-                            <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:11, fontWeight:700 }} />
-                          </div>
-                          {funnelSeries.map((stage) => (
-                            <div key={stage.label} style={{ background:theme.card, border:`1px solid ${theme.border}`, borderRadius:8, padding:"7px 8px" }}>
-                              <div style={{ height:6, background:theme.border, borderRadius:999, overflow:"hidden", marginBottom:6 }}>
-                                <div style={{ width:`${Math.min(100, (stage.value / totalDemand) * 100)}%`, height:"100%", background:stage.color, borderRadius:999 }} />
-                              </div>
-                              <div style={{ fontSize:10, fontWeight:700, color:stage.color, textAlign:"center" }}>{Math.round(stage.value).toLocaleString()}</div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
             </Panel>
 
             {/* Bucket Trends (Column View) */}
