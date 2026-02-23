@@ -226,7 +226,7 @@ const DEFAULT_DATA = {
 };
 
 // ─── localStorage HELPERS ────────────────────────────────────────────────────
-const LS_DATA_KEY  = "nbfc_dashboard_data_v2";
+const LS_DATA_KEY  = "nbfc_dashboard_data_v3";
 const LS_THEME_KEY = "nbfc_dashboard_theme_v2";
 
 function lsGet(key) {
@@ -762,8 +762,8 @@ export default function App() {
               <Panel title="Users Whitelisted by Lender" subtitle="Total users followed by lender-wise break-up" theme={theme}>
                 <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:150 }}>
                   {(() => {
-                    const maxUsers = Math.max(...userWhitelistedRows.map((x) => x.users), 1);
-                    return userWhitelistedRows.map((entry, i) => {
+                    const maxUsers = Math.max(...data.userWhitelistedByLender.map((x) => x.users), 1);
+                    return data.userWhitelistedByLender.map((entry, i) => {
                       const h = (entry.users / maxUsers) * 115;
                       return (
                         <div key={`${entry.lender}-${i}`} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
@@ -833,7 +833,7 @@ export default function App() {
 
             </div>
 
-            <Panel title="Collection summary" subtitle="App score-wise collections distribution" theme={theme} style={{ marginTop:14 }}>
+            <Panel title="Disbursal mix by App score" subtitle="App score-wise collections distribution" theme={theme} style={{ marginTop:14 }}>
               <div style={{ overflowX:"auto", border:`1px solid ${theme.border}`, borderRadius:10 }}>
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1700 }}>
                   <thead>
