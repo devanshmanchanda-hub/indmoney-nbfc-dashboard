@@ -154,6 +154,10 @@ const DEFAULT_DATA = {
   monthly: [320, 420, 380, 510, 480, 560, 620, 580, 640, 710, 680, 750],
   months:  ["Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan"],
   monthlyAUM: [3200, 3420, 3680, 3890, 4120, 4280, 4350, 4480, 4620, 4720, 4780, 4820],
+  monthlyAUMByLender: {
+    CS: [1446.4, 1545.8, 1663.4, 1758.3, 1862.2, 1934.6, 1966.2, 2025.0, 2088.2, 2133.4, 2160.6, 2178.6],
+    IDFC: [1049.6, 1121.8, 1207.0, 1275.9, 1351.4, 1403.8, 1426.8, 1469.4, 1515.4, 1548.2, 1567.8, 1581.0],
+  },
   monthlyROI: [16.8, 17.0, 17.2, 17.3, 17.5, 17.6, 17.6, 17.7, 17.6, 17.6, 17.5, 17.6],
   lenderMix: [
     { lender: "CS (CreditSaison)", share: 45.2 },
@@ -643,6 +647,34 @@ export default function App() {
                   })}
                 </div>
               </Panel>
+            </div>
+
+            {/* Row: Lender-wise AUM Trend */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+              {[{ key:"CS", label:"CS" }, { key:"IDFC", label:"IDFC" }].map(({ key, label }) => {
+                const lenderSeries = data.monthlyAUMByLender?.[key] || [];
+                const max = Math.max(...(lenderSeries.length ? lenderSeries : [1]));
+                return (
+                  <Panel key={key} title={`${label} Monthly AUM Trend (₹ Cr)`} subtitle="Month-wise lender AUM progression" theme={theme}>
+                    <div style={{ display:"flex", alignItems:"flex-end", gap:4, height:130 }}>
+                      {data.months.map((month, i) => {
+                        const value = lenderSeries[i] ?? 0;
+                        const h = max ? (value / max) * 110 : 0;
+                        const last = i === data.months.length - 1;
+                        return (
+                          <div key={`${key}-${month}-${i}`} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                            <div style={{ fontSize:7, color: theme.subtext, marginBottom:2 }}>
+                              <EditableValue value={value} onChange={val=>update(`monthlyAUMByLender.${key}[${i}]`,val)} fontSize={7} color={theme.subtext} />
+                            </div>
+                            <div style={{ width:"90%", height: h, background: last ? `linear-gradient(0deg,${theme.accent},${theme.accent}88)` : `${theme.accent2}44`, borderRadius:"3px 3px 0 0", minHeight:4 }} />
+                            <div style={{ fontSize:7, color: theme.subtext, marginTop:3 }}>{month}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Panel>
+                );
+              })}
             </div>
 
             {/* Row: Lender Mix + New vs Repeat */}
