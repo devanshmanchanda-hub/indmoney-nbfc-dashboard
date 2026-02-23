@@ -212,7 +212,7 @@ const DEFAULT_DATA = {
   ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
-    agingBucket: true, profitability: true, creditQuality: true,
+    agingBucket: true, creditQuality: true,
     collections: true, liquidity: true, callingFeedback: true,
   },
   selectedLender: "ALL", // ALL / CS / IDFC / InCred
@@ -788,31 +788,6 @@ export default function App() {
                 </div>
               </Panel>
 
-              {pv.profitability && (
-                <Panel title="Profitability KPIs" subtitle="Click any value to edit" theme={theme} onHide={()=>togglePanel("profitability")}>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                    {[
-                      { label:"NIM",    field:"profitability.nim",         desc:"Net Interest Margin",  color: theme.accent  },
-                      { label:"ROA",    field:"profitability.roa",         desc:"Return on Assets",     color: theme.accent2 },
-                      { label:"ROE",    field:"profitability.roe",         desc:"Return on Equity",     color:"#A855F7"       },
-                      { label:"Spread", field:"profitability.spread",      desc:"Yield − Cost of Funds",color:"#F59E0B"       },
-                      { label:"Yield",  field:"profitability.yield",       desc:"Portfolio Yield",      color: theme.accent  },
-                      { label:"CoF",    field:"profitability.costOfFunds", desc:"Cost of Funds",        color:"#EF4444"       },
-                    ].map((k, i) => {
-                      const val = k.field.split(".").reduce((o,p)=>o[p], data);
-                      return (
-                        <div key={i} style={{ background:`${k.color}11`, borderRadius:10, padding:"10px 12px", borderLeft:`3px solid ${k.color}` }}>
-                          <div style={{ fontSize:10, color: theme.subtext, marginBottom:2 }}>{k.desc}</div>
-                          <div style={{ fontSize:20, fontWeight:800, color: k.color }}>
-                            <EditableValue value={val} onChange={v=>update(k.field,v)} fontSize={20} color={k.color} suffix="%" />
-                          </div>
-                          <div style={{ fontSize:10, fontWeight:700, color: theme.subtext }}>{k.label}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </Panel>
-              )}
             </div>
 
             <Panel title="Collection summary" subtitle="App score-wise collections distribution" theme={theme} style={{ marginTop:14 }}>
