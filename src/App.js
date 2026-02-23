@@ -474,7 +474,6 @@ export default function App() {
   const updateTheme = (t) => { setThemeName(t); lsSet(LS_THEME_KEY, t); };
   const togglePanel = (key) => update(`panelVisibility.${key}`, !data.panelVisibility[key]);
   const resetAll    = () => { setData(DEFAULT_DATA); lsSet(LS_DATA_KEY, DEFAULT_DATA); };
-  const npaColor    = (v) => v < 3 ? theme.accent : v < 5 ? "#F59E0B" : "#EF4444";
   const growthColor = (v) => v >= 0 ? theme.accent : "#EF4444";
 
   if (!data) return (
@@ -500,8 +499,7 @@ export default function App() {
   const fieldAgencyRows = data.fieldAgencyCollectionsPerformance || DEFAULT_DATA.fieldAgencyCollectionsPerformance || [];
   const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
   const userWhitelistedRows = data.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender || [];
-  const NAV_TABS = ["Overview","Credit Quality","Collections","User level collection","Agent Performance","Field agency collections performance","Product Mix","Liquidity","Calling feedback"];
-  const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
+  const NAV_TABS = ["Overview","Credit Quality","Collections","Agent Performance","Field agency collections performance","Calling feedback"];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -564,7 +562,7 @@ export default function App() {
             <div>
               <div style={{ fontSize:11, fontWeight:700, color: theme.subtext, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Panel Visibility</div>
               <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                {Object.entries(pv).map(([key, vis]) => (
+                {Object.entries(pv).filter(([key]) => !["productMix", "liquidity"].includes(key)).map(([key, vis]) => (
                   <button key={key} onClick={() => togglePanel(key)} style={{ padding:"5px 12px", borderRadius:6, fontSize:11, fontWeight:600, cursor:"pointer", border:`1px solid ${theme.border}`, background: vis ? theme.accent+"22" : "transparent", color: vis ? theme.accent : theme.subtext }}>
                     {vis ? "✓" : "○"} {key.replace(/([A-Z])/g, " $1").trim()}
                   </button>
@@ -916,34 +914,6 @@ export default function App() {
               <div style={{ fontSize:11, color: theme.accent, background: theme.accent+"22", padding:"6px 12px", borderRadius:6 }}>
                 Showing: <strong>{data.selectedLender === "ALL" ? "All Lenders" : data.selectedLender}</strong>
               </div>
-            </div>
-
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:12, marginBottom:16 }}>
-              {[
-                { label:"GNPA",        field:"gnpa",       desc:"Gross NPA %",           color:"#EF4444", icon:"⚠️" },
-                { label:"NNPA",        field:"nnpa",       desc:"Net NPA %",             color:"#F97316", icon:"🔴" },
-                { label:"PAR 30+",     field:"par30",      desc:"Portfolio at Risk 30+", color:"#F59E0B", icon:"📉" },
-                { label:"PAR 60+",     field:"par60",      desc:"Portfolio at Risk 60+", color:"#F59E0B", icon:"📉" },
-                { label:"PAR 90+",     field:"par90",      desc:"Portfolio at Risk 90+", color:"#EF4444", icon:"🚨" },
-                { label:"PCR",         field:"pcr",        desc:"Provision Coverage",    color: theme.accent, icon:"🛡️" },
-                { label:"Write-off",   field:"writeOff",   desc:"Write-off Rate %",      color:"#A855F7", icon:"✏️" },
-                { label:"Credit Cost", field:"creditCost", desc:"Annualised Credit Cost",color: theme.accent2, icon:"💰" },
-              ].map((k, i) => {
-                const lenderKey = data.selectedLender;
-                const val = data.lenderData[lenderKey].creditQuality[k.field];
-                return (
-                  <div key={i} style={{ background: theme.card, borderRadius:14, padding:"16px 18px", border:`1px solid ${k.color}33` }}>
-                    <div style={{ display:"flex", justifyContent:"space-between" }}>
-                      <div style={{ fontSize:10, color: theme.subtext, textTransform:"uppercase", letterSpacing:"0.06em", fontWeight:600 }}>{k.label}</div>
-                      <span style={{ fontSize:14 }}>{k.icon}</span>
-                    </div>
-                    <div style={{ fontSize:24, fontWeight:800, color: k.color, margin:"8px 0 2px" }}>
-                      {val.toFixed(2)}%
-                    </div>
-                    <div style={{ fontSize:10, color: theme.subtext }}>{k.desc}</div>
-                  </div>
-                );
-              })}
             </div>
 
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
@@ -1377,141 +1347,9 @@ export default function App() {
           </div>
         )}
         {/* ══════════════════════════════════════════════
-            TAB 3 — PRODUCT MIX (unchanged)
-        ══════════════════════════════════════════════ */}
-        {activeTab === 6 && (
-          <div>
-            <Panel title="Product Portfolio — Full Detail" subtitle="Click any cell to edit" theme={theme} style={{ marginBottom:14 }}>
-              <div style={{ overflowX:"auto" }}>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
-                  <thead>
-                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
-                      {["Product","AUM (₹Cr)","Portfolio %","NPA %","Status"].map(h => (
-                        <th key={h} style={{ padding:"10px 12px", textAlign: h==="Product"?"left":"center", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.productMix.map((p, i) => {
-                      const c      = npaColor(p.npa);
-                      const status = p.npa < 3 ? "Healthy" : p.npa < 5 ? "Watch" : "Stress";
-                      return (
-                        <tr key={i} style={{ borderBottom:`1px solid ${theme.border}` }}>
-                          <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>
-                            <EditableText value={p.product} onChange={v=>update(`productMix[${i}].product`,v)} style={{ fontWeight:600 }} />
-                          </td>
-                          <td style={{ padding:"12px", textAlign:"center", color: theme.subtext }}>
-                            ₹<EditableValue value={p.aum} onChange={v=>update(`productMix[${i}].aum`,v)} fontSize={12} color={theme.subtext} />
-                          </td>
-                          <td style={{ padding:"12px", textAlign:"center" }}>
-                            <div style={{ display:"flex", alignItems:"center", gap:6, justifyContent:"center" }}>
-                              <div style={{ width:36, background: theme.border, borderRadius:4, height:6 }}>
-                                <div style={{ width:`${(p.pct/30)*100}%`, background: theme.accent2, height:"100%", borderRadius:4 }} />
-                              </div>
-                              <EditableValue value={p.pct} onChange={v=>update(`productMix[${i}].pct`,v)} fontSize={12} color={theme.subtext} suffix="%" />
-                            </div>
-                          </td>
-                          <td style={{ padding:"12px", textAlign:"center", color: c, fontWeight:700 }}>
-                            <EditableValue value={p.npa} onChange={v=>update(`productMix[${i}].npa`,v)} fontSize={12} color={c} suffix="%" />
-                          </td>
-                          <td style={{ padding:"12px", textAlign:"center" }}>
-                            <span style={{ background:`${c}22`, color: c, padding:"3px 10px", borderRadius:20, fontSize:10, fontWeight:700 }}>{status}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </Panel>
-
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-              <Panel title="AUM Distribution" subtitle="Donut by product AUM" theme={theme}>
-                <div style={{ display:"flex", justifyContent:"center", marginBottom:12 }}>
-                  <Donut segments={data.productMix.map(p=>({value:p.aum}))} size={130} accent={theme.accent} accent2={theme.accent2} />
-                </div>
-                {data.productMix.map((p, i) => {
-                  const clrs=[theme.accent,theme.accent2,"#F59E0B","#EF4444","#A855F7","#EC4899"];
-                  const total = data.productMix.reduce((a,b)=>a+b.aum,0);
-                  return (
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                      <div style={{ width:10, height:10, borderRadius:2, background: clrs[i], flexShrink:0 }} />
-                      <span style={{ fontSize:11, color: theme.subtext, flex:1 }}>{p.product}</span>
-                      <span style={{ fontSize:11, fontWeight:700, color: theme.text }}>₹{p.aum}Cr</span>
-                      <span style={{ fontSize:10, color: clrs[i] }}>{((p.aum/total)*100).toFixed(1)}%</span>
-                    </div>
-                  );
-                })}
-              </Panel>
-
-              <Panel title="NPA Heatmap" subtitle="Intensity = NPA severity" theme={theme}>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginTop:4 }}>
-                  {data.productMix.map((p, i) => {
-                    const intensity = Math.min(p.npa / 10, 1);
-                    const c = npaColor(p.npa);
-                    return (
-                      <div key={i} style={{ background:`rgba(239,68,68,${intensity*0.55+0.04})`, borderRadius:10, padding:"14px 16px", flex:"1 1 120px", border:`1px solid ${c}44` }}>
-                        <div style={{ fontSize:11, color: theme.text, fontWeight:600, marginBottom:4 }}>{p.product}</div>
-                        <div style={{ fontSize:24, fontWeight:800, color: c }}>{p.npa}%</div>
-                        <div style={{ fontSize:9, color: theme.subtext }}>GNPA</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Panel>
-            </div>
-          </div>
-        )}
-
-
-        {/* ══════════════════════════════════════════════
-            TAB 3 — USER LEVEL COLLECTION
-        ══════════════════════════════════════════════ */}
-        {activeTab === 3 && (
-          <div>
-            <Panel title="User level collection" subtitle="User-wise collections and calling summary" theme={theme}>
-              <div style={{ overflowX:"auto" }}>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
-                  <thead>
-                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
-                      {[
-                        "User ID",
-                        "Number of times called",
-                        "Current max DPD",
-                        "Amount overdue",
-                        "Total Amount o/s",
-                        "Last agent called",
-                        "Call date and time",
-                        "User response",
-                      ].map((h) => (
-                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userLevelCollectionRows.map((row, i) => (
-                      <tr key={`${row.userId}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
-                        <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.userId}</td>
-                        <td style={{ padding:"12px", color: theme.subtext }}>{row.timesCalled}</td>
-                        <td style={{ padding:"12px", color: theme.subtext }}>{row.maxDpd}</td>
-                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.amountOverdue === "number" ? row.amountOverdue.toFixed(2) : "-"}</td>
-                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.totalOutstanding === "number" ? row.totalOutstanding.toFixed(2) : "-"}</td>
-                        <td style={{ padding:"12px", color: theme.subtext }}>{row.lastAgentCalled}</td>
-                        <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>{row.callDateTime}</td>
-                        <td style={{ padding:"12px", color: theme.subtext }}>{row.userResponse}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Panel>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════
             TAB 4 — AGENT PERFORMANCE
         ══════════════════════════════════════════════ */}
-        {activeTab === 4 && (
+        {activeTab === 3 && (
           <div>
             <Panel title="Agent Performance" subtitle="Agent-wise collections performance" theme={theme}>
               <div style={{ overflowX:"auto" }}>
@@ -1542,7 +1380,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 5 — FIELD AGENCY COLLECTIONS PERFORMANCE
         ══════════════════════════════════════════════ */}
-        {activeTab === 5 && (
+        {activeTab === 4 && (
           <div>
             <Panel title="Field agency collections performance" subtitle="City-wise field agency coverage" theme={theme}>
               <div style={{ overflowX:"auto" }}>
@@ -1570,103 +1408,9 @@ export default function App() {
         )}
 
         {/* ══════════════════════════════════════════════
-            TAB 4 — LIQUIDITY & CAPITAL (unchanged)
-        ══════════════════════════════════════════════ */}
-        {activeTab === 7 && pv.liquidity && (
-          <div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
-              {[
-                { label:"CAR",            field:"liquidity.car",           desc:"Capital Adequacy",  color: theme.accent,  threshold:15, higher:true,  icon:"🏛️", sfx:"%" },
-                { label:"Tier 1 Capital", field:"liquidity.tier1",         desc:"Core Capital",      color: theme.accent2, threshold:12, higher:true,  icon:"💎", sfx:"%" },
-                { label:"LCR",            field:"liquidity.lcr",           desc:"Liquidity Coverage",color:"#A855F7",       threshold:100,higher:true,  icon:"💧", sfx:"%" },
-                { label:"Debt / Equity",  field:"liquidity.debtEquity",    desc:"Leverage Ratio",    color:"#F59E0B",       threshold:7,  higher:false, icon:"⚖️", sfx:"x" },
-                { label:"Borrowing Cost", field:"liquidity.borrowingCost", desc:"Weighted Avg CoF",  color:"#EF4444",       threshold:10, higher:false, icon:"💸", sfx:"%" },
-                { label:"Bank Lines",     field:"liquidity.bankLines",     desc:"Share of borrowings",color: theme.accent2, threshold:50, higher:false, icon:"🏦", sfx:"%" },
-              ].map((k, i) => {
-                const val = k.field.split(".").reduce((o,p)=>o[p], data);
-                const ok  = k.higher ? val >= k.threshold : val <= k.threshold;
-                return (
-                  <div key={i} style={{ background: theme.card, borderRadius:14, padding:"18px 20px", border:`1px solid ${ok?k.color+"33":"#EF444433"}` }}>
-                    <div style={{ display:"flex", justifyContent:"space-between" }}>
-                      <div style={{ fontSize:10, color: theme.subtext, textTransform:"uppercase", letterSpacing:"0.06em", fontWeight:600 }}>{k.label}</div>
-                      <span style={{ fontSize:14 }}>{k.icon}</span>
-                    </div>
-                    <div style={{ fontSize:24, fontWeight:800, color: ok?k.color:"#EF4444", margin:"8px 0 2px" }}>
-                      <EditableValue value={val} onChange={v=>update(k.field,v)} fontSize={22} color={ok?k.color:"#EF4444"} suffix={k.sfx} />
-                    </div>
-                    <div style={{ fontSize:10, color: theme.subtext, marginBottom:4 }}>{k.desc}</div>
-                    <div style={{ fontSize:9, color: ok?theme.accent+"88":"#EF444488" }}>RBI min: {k.threshold}{k.sfx} • {ok?"✅ Compliant":"❌ Breached"}</div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-              <Panel title="Borrowing Mix" subtitle="Funding diversification — click to edit" theme={theme}>
-                {[
-                  { label:"Bank Lines / CC", field:"liquidity.bankLines", color: theme.accent2 },
-                  { label:"NCDs / Bonds",    field:"liquidity.ncd",       color: theme.accent  },
-                  { label:"ECB / FCNR",      field:"liquidity.ecb",       color:"#A855F7"       },
-                  { label:"Commercial Paper",field:"liquidity.cp",        color:"#F59E0B"       },
-                ].map((b, i) => {
-                  const val = b.field.split(".").reduce((o,p)=>o[p], data);
-                  return (
-                    <div key={i} style={{ marginBottom:14 }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
-                        <span style={{ fontSize:12, color: theme.subtext }}>{b.label}</span>
-                        <span style={{ fontSize:12, fontWeight:700, color: b.color }}>
-                          <EditableValue value={val} onChange={v=>update(b.field,v)} fontSize={12} color={b.color} suffix="%" />
-                        </span>
-                      </div>
-                      <div style={{ background: theme.border, borderRadius:4, height:10, overflow:"hidden" }}>
-                        <div style={{ width:`${val}%`, background: b.color, height:"100%", borderRadius:4, opacity:0.85 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-                <div style={{ marginTop:8, padding:"8px 10px", background:`${theme.accent}11`, borderRadius:8, fontSize:10, color: theme.subtext }}>
-                  Total = {["bankLines","ncd","ecb","cp"].reduce((a,k)=>a+data.liquidity[k],0).toFixed(1)}% · Aim for &lt;50% in any single bucket
-                </div>
-              </Panel>
-
-              <Panel title="ALM — Maturity Ladder" subtitle="Asset-liability gap by time bucket" theme={theme}>
-                {[
-                  { bucket:"Upto 1M", inflow:380,  outflow:320  },
-                  { bucket:"1–3M",    inflow:620,  outflow:580  },
-                  { bucket:"3–6M",    inflow:840,  outflow:810  },
-                  { bucket:"6M–1Y",   inflow:1100, outflow:960  },
-                  { bucket:"1–3Y",    inflow:2400, outflow:1800 },
-                ].map((b, i) => {
-                  const gap = b.inflow - b.outflow;
-                  const c   = gap >= 0 ? theme.accent : "#EF4444";
-                  return (
-                    <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10, padding:"8px 10px", background: theme.bg, borderRadius:8 }}>
-                      <div style={{ fontSize:10, color: theme.subtext, width:52, flexShrink:0 }}>{b.bucket}</div>
-                      <div style={{ flex:1 }}>
-                        <div style={{ display:"flex", gap:4, marginBottom:3 }}>
-                          <div style={{ flex: b.inflow/(b.inflow+b.outflow), background:`${theme.accent}55`, height:6, borderRadius:3 }} />
-                          <div style={{ flex: b.outflow/(b.inflow+b.outflow), background:"#EF444455",        height:6, borderRadius:3 }} />
-                        </div>
-                        <div style={{ display:"flex", gap:8, fontSize:9, color: theme.subtext }}>
-                          <span style={{ color: theme.accent }}>In: ₹{b.inflow}Cr</span>
-                          <span style={{ color:"#EF4444" }}>Out: ₹{b.outflow}Cr</span>
-                        </div>
-                      </div>
-                      <div style={{ fontSize:11, fontWeight:800, color: c, width:56, textAlign:"right" }}>
-                        {gap>0?"+":""}₹{gap}Cr
-                      </div>
-                    </div>
-                  );
-                })}
-              </Panel>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════
             TAB 5 — CALLING FEEDBACK
         ══════════════════════════════════════════════ */}
-        {activeTab === 8 && (pv.callingFeedback ?? true) && (
+        {activeTab === 5 && (pv.callingFeedback ?? true) && (
           <div>
             <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
               <div style={{ overflowX:"auto" }}>
@@ -1710,6 +1454,43 @@ export default function App() {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="User level collection" subtitle="User-wise collections and calling summary" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1200 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      {[
+                        "User ID",
+                        "Number of times called",
+                        "Current max DPD",
+                        "Amount overdue",
+                        "Total Amount o/s",
+                        "Last agent called",
+                        "Call date and time",
+                        "User response",
+                      ].map((h) => (
+                        <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userLevelCollectionRows.map((row, i) => (
+                      <tr key={`${row.userId}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.userId}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.timesCalled}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.maxDpd}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.amountOverdue === "number" ? row.amountOverdue.toFixed(2) : "-"}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.totalOutstanding === "number" ? row.totalOutstanding.toFixed(2) : "-"}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.lastAgentCalled}</td>
+                        <td style={{ padding:"12px", color: theme.subtext, whiteSpace:"nowrap" }}>{row.callDateTime}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.userResponse}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
