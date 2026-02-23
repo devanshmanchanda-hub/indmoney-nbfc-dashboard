@@ -179,6 +179,13 @@ const DEFAULT_DATA = {
     { month: "Dec", new: 380, repeat: 300 },
     { month: "Jan", new: 420, repeat: 330 },
   ],
+  userWhitelistedByLender: [
+    { lender: "Total", users: 58240 },
+    { lender: "CS", users: 26390 },
+    { lender: "IDFC", users: 19120 },
+    { lender: "InCred", users: 8970 },
+    { lender: "Others", users: 3760 },
+  ],
   liquidity: {
     car: 19.4, tier1: 16.2, lcr: 142,
     debtEquity: 4.8, borrowingCost: 9.2,
@@ -425,7 +432,14 @@ export default function App() {
   // ── Load from localStorage on mount ──
   useEffect(() => {
     const saved = lsGet(LS_DATA_KEY);
-    setData(saved || DEFAULT_DATA);
+    const hydratedData = saved
+      ? {
+          ...DEFAULT_DATA,
+          ...saved,
+          userWhitelistedByLender: saved.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender,
+        }
+      : DEFAULT_DATA;
+    setData(hydratedData);
     const savedTheme = lsGet(LS_THEME_KEY);
     if (savedTheme && THEMES[savedTheme]) setThemeName(savedTheme);
   }, []);
@@ -485,6 +499,7 @@ export default function App() {
   const agentPerformanceRows = data.agentPerformance || DEFAULT_DATA.agentPerformance || [];
   const fieldAgencyRows = data.fieldAgencyCollectionsPerformance || DEFAULT_DATA.fieldAgencyCollectionsPerformance || [];
   const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
+  const userWhitelistedRows = data.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender || [];
   const NAV_TABS = ["Overview","Credit Quality","Collections","User level collection","Agent Performance","Field agency collections performance","Product Mix","Liquidity","Calling feedback"];
   const TABS = ["Overview","Credit Quality","Collections","Product Mix","Liquidity"];
 
@@ -741,6 +756,34 @@ export default function App() {
                     <div style={{ width:10, height:10, background: theme.accent2, borderRadius:2 }} />
                     <span style={{ color: theme.subtext }}>Repeat Customers</span>
                   </div>
+                </div>
+              </Panel>
+
+              <Panel title="Users Whitelisted by Lender" subtitle="Total users followed by lender-wise break-up" theme={theme}>
+                <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:150 }}>
+                  {(() => {
+                    const maxUsers = Math.max(...userWhitelistedRows.map((x) => x.users), 1);
+                    return userWhitelistedRows.map((entry, i) => {
+                      const h = (entry.users / maxUsers) * 115;
+                      return (
+                        <div key={`${entry.lender}-${i}`} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center" }}>
+                          <div style={{ fontSize:10, color: theme.text, marginBottom:4, fontWeight:600 }}>
+                            <EditableValue
+                              value={entry.users}
+                              onChange={(v)=>update(`userWhitelistedByLender[${i}].users`, v)}
+                              fontSize={10}
+                              color={theme.text}
+                              noDecimal
+                            />
+                          </div>
+                          <div style={{ width:"80%", height:h, borderRadius:"4px 4px 0 0", background: i===0 ? theme.accent : theme.accent2, minHeight:8 }} />
+                          <div style={{ fontSize:9, color: theme.subtext, marginTop:5, textAlign:"center", lineHeight:1.2 }}>
+                            <EditableText value={entry.lender} onChange={(v)=>update(`userWhitelistedByLender[${i}].lender`, v)} style={{ fontSize:9, color: theme.subtext }} />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </Panel>
             </div>
