@@ -226,7 +226,7 @@ const DEFAULT_DATA = {
 };
 
 // ─── localStorage HELPERS ────────────────────────────────────────────────────
-const LS_DATA_KEY  = "nbfc_dashboard_data_v2";
+const LS_DATA_KEY  = "nbfc_dashboard_data_v3";
 const LS_THEME_KEY = "nbfc_dashboard_theme_v2";
 
 function lsGet(key) {
