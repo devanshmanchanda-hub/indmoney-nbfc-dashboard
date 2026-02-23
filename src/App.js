@@ -1104,7 +1104,7 @@ export default function App() {
             </div>
 
             {/* Collection Funnel */}
-            <Panel title="Collection Funnel" subtitle="Month-wise stage conversion comparison" theme={theme}>
+            <Panel title="Collection Funnel" subtitle="Month-wise stage values (numeric)" theme={theme}>
               <div style={{ overflowX:"auto", background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"12px 12px 10px" }}>
                 <div style={{ minWidth:980 }}>
                   <div style={{ display:"grid", gridTemplateColumns:"150px repeat(5, minmax(120px, 1fr))", gap:8, marginBottom:8 }}>
@@ -1124,12 +1124,14 @@ export default function App() {
 
                   <div style={{ display:"grid", gap:8 }}>
                     {collectionsMonthlyRows.map((row, i) => {
-                      const contactable = Math.max(0, Math.min(100, row.contactability || 0));
-                      const ptpReceived = Math.max(0, Math.min(100, contactable * (data.collections.ptp || 0) / 100));
-                      const ptpHonored = Math.max(0, Math.min(100, ptpReceived * (data.collections.ptpHonored || 0) / 100));
-                      const finallyCollected = Math.max(0, Math.min(100, contactable - (row.femi || 0) * 1.35));
+                      const totalDemand = Math.max(1, row.currentPOS || 0);
+                      const contactable = Math.max(0, Math.min(totalDemand, totalDemand * (row.contactability || 0) / 100));
+                      const ptpReceived = Math.max(0, Math.min(totalDemand, contactable * (data.collections.ptp || 0) / 100));
+                      const ptpHonored = Math.max(0, Math.min(totalDemand, ptpReceived * (data.collections.ptpHonored || 0) / 100));
+                      const finallyCollectedPct = Math.max(0, Math.min(100, (row.contactability || 0) - (row.femi || 0) * 1.35));
+                      const finallyCollected = Math.max(0, Math.min(totalDemand, totalDemand * finallyCollectedPct / 100));
                       const funnelSeries = [
-                        { label:"Total Demand", value:100, color:theme.accent2 },
+                        { label:"Total Demand", value:totalDemand, color:theme.accent2 },
                         { label:"Contactable", value:contactable, color:"#F59E0B" },
                         { label:"PTP Received", value:ptpReceived, color:"#A855F7" },
                         { label:"PTP Honored", value:ptpHonored, color:"#F97316" },
@@ -1144,9 +1146,9 @@ export default function App() {
                           {funnelSeries.map((stage) => (
                             <div key={stage.label} style={{ background:theme.card, border:`1px solid ${theme.border}`, borderRadius:8, padding:"7px 8px" }}>
                               <div style={{ height:6, background:theme.border, borderRadius:999, overflow:"hidden", marginBottom:6 }}>
-                                <div style={{ width:`${stage.value}%`, height:"100%", background:stage.color, borderRadius:999 }} />
+                                <div style={{ width:`${Math.min(100, (stage.value / totalDemand) * 100)}%`, height:"100%", background:stage.color, borderRadius:999 }} />
                               </div>
-                              <div style={{ fontSize:10, fontWeight:700, color:stage.color, textAlign:"center" }}>{stage.value.toFixed(1)}%</div>
+                              <div style={{ fontSize:10, fontWeight:700, color:stage.color, textAlign:"center" }}>{Math.round(stage.value).toLocaleString()}</div>
                             </div>
                           ))}
                         </div>
