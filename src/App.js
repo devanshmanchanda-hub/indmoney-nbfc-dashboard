@@ -47,7 +47,7 @@ const DEFAULT_DATA = {
         { bucket: "180+ DPD", pct: 0.5 },
       ],
     },
-    InCred: {
+    AXIS: {
       creditQuality: { gnpa: 4.21, nnpa: 2.38, par30: 7.85, par60: 5.21, par90: 4.21, pcr: 61.8, writeOff: 1.15, creditCost: 2.68 },
       agingBucket: [
         { bucket: "Current", pct: 82.5 },
@@ -55,6 +55,39 @@ const DEFAULT_DATA = {
         { bucket: "31-60 DPD", pct: 4.9 },
         { bucket: "61-90 DPD", pct: 2.8 },
         { bucket: "91-180 DPD", pct: 1.6 },
+        { bucket: "180+ DPD", pct: 0.4 },
+      ],
+    },
+    LTF: {
+      creditQuality: { gnpa: 3.76, nnpa: 2.02, par30: 6.94, par60: 4.58, par90: 3.76, pcr: 65.7, writeOff: 0.98, creditCost: 2.24 },
+      agingBucket: [
+        { bucket: "Current", pct: 85.0 },
+        { bucket: "1-30 DPD", pct: 6.8 },
+        { bucket: "31-60 DPD", pct: 4.1 },
+        { bucket: "61-90 DPD", pct: 2.3 },
+        { bucket: "91-180 DPD", pct: 1.3 },
+        { bucket: "180+ DPD", pct: 0.5 },
+      ],
+    },
+    SFMG: {
+      creditQuality: { gnpa: 3.54, nnpa: 1.96, par30: 6.61, par60: 4.31, par90: 3.54, pcr: 66.9, writeOff: 0.95, creditCost: 2.18 },
+      agingBucket: [
+        { bucket: "Current", pct: 85.7 },
+        { bucket: "1-30 DPD", pct: 6.4 },
+        { bucket: "31-60 DPD", pct: 3.9 },
+        { bucket: "61-90 DPD", pct: 2.2 },
+        { bucket: "91-180 DPD", pct: 1.2 },
+        { bucket: "180+ DPD", pct: 0.6 },
+      ],
+    },
+    FIBE: {
+      creditQuality: { gnpa: 4.08, nnpa: 2.26, par30: 7.44, par60: 4.94, par90: 4.08, pcr: 63.9, writeOff: 1.11, creditCost: 2.53 },
+      agingBucket: [
+        { bucket: "Current", pct: 83.6 },
+        { bucket: "1-30 DPD", pct: 7.5 },
+        { bucket: "31-60 DPD", pct: 4.5 },
+        { bucket: "61-90 DPD", pct: 2.6 },
+        { bucket: "91-180 DPD", pct: 1.4 },
         { bucket: "180+ DPD", pct: 0.4 },
       ],
     },
@@ -157,13 +190,19 @@ const DEFAULT_DATA = {
   monthlyAUMByLender: {
     CS: [1446.4, 1545.8, 1663.4, 1758.3, 1862.2, 1934.6, 1966.2, 2025.0, 2088.2, 2133.4, 2160.6, 2178.6],
     IDFC: [1049.6, 1121.8, 1207.0, 1275.9, 1351.4, 1403.8, 1426.8, 1469.4, 1515.4, 1548.2, 1567.8, 1581.0],
+    AXIS: [492.8, 526.7, 566.8, 599.2, 634.7, 659.3, 670.1, 690.1, 711.7, 727.1, 736.3, 742.5],
+    LTF: [115.2, 123.1, 132.4, 140.0, 148.3, 154.0, 156.6, 161.2, 166.3, 169.9, 172.1, 173.6],
+    SFMG: [76.8, 82.1, 88.3, 93.3, 98.9, 102.7, 104.4, 107.5, 110.8, 113.3, 114.7, 115.7],
+    FIBE: [19.2, 20.5, 22.1, 23.3, 24.7, 25.7, 26.1, 26.9, 27.7, 28.3, 28.7, 28.9],
   },
   monthlyROI: [16.8, 17.0, 17.2, 17.3, 17.5, 17.6, 17.6, 17.7, 17.6, 17.6, 17.5, 17.6],
   lenderMix: [
-    { lender: "CS (CreditSaison)", share: 45.2 },
+    { lender: "CS", share: 45.2 },
     { lender: "IDFC", share: 32.8 },
-    { lender: "InCred", share: 15.4 },
-    { lender: "Others", share: 6.6 },
+    { lender: "AXIS", share: 15.4 },
+    { lender: "LTF", share: 2.4 },
+    { lender: "SFMG", share: 1.6 },
+    { lender: "FIBE", share: 2.6 },
   ],
   newVsRepeat: [
     { month: "Feb", new: 180, repeat: 140 },
@@ -215,7 +254,7 @@ const DEFAULT_DATA = {
     agingBucket: true, creditQuality: true,
     collections: true, liquidity: true, callingFeedback: true,
   },
-  selectedLender: "ALL", // ALL / CS / IDFC / InCred
+  selectedLender: "ALL", // ALL / CS / IDFC / AXIS / LTF / SFMG / FIBE
 };
 
 // ─── localStorage HELPERS ────────────────────────────────────────────────────
@@ -651,7 +690,7 @@ export default function App() {
 
             {/* Row: Lender-wise AUM Trend */}
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
-              {[{ key:"CS", label:"CS" }, { key:"IDFC", label:"IDFC" }].map(({ key, label }) => {
+              {[{ key:"CS", label:"CS" }, { key:"IDFC", label:"IDFC" }, { key:"AXIS", label:"AXIS" }, { key:"LTF", label:"LTF" }, { key:"SFMG", label:"SFMG" }, { key:"FIBE", label:"FIBE" }].map(({ key, label }) => {
                 const lenderSeries = data.monthlyAUMByLender?.[key] || [];
                 const max = Math.max(...(lenderSeries.length ? lenderSeries : [1]));
                 return (
@@ -864,9 +903,12 @@ export default function App() {
                   }}
                 >
                   <option value="ALL">All Lenders</option>
-                  <option value="CS">CS (CreditSaison)</option>
+                  <option value="CS">CS</option>
                   <option value="IDFC">IDFC</option>
-                  <option value="InCred">InCred</option>
+                  <option value="AXIS">AXIS</option>
+                  <option value="LTF">LTF</option>
+                  <option value="SFMG">SFMG</option>
+                  <option value="FIBE">FIBE</option>
                 </select>
                 <div style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", color: theme.subtext }}>▼</div>
               </div>
