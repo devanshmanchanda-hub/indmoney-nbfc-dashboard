@@ -212,10 +212,10 @@ const DEFAULT_DATA = {
     { agentName: "Neha Soni", casesGiven: 88, usersConnected: 58, amountRecovered: 0.94 },
   ],
   fieldAgencyCollectionsPerformance: [
-    { city: "Mumbai", casesShared: 215, overdueAmount: 3.42 },
-    { city: "Delhi", casesShared: 178, overdueAmount: 2.96 },
-    { city: "Bengaluru", casesShared: 142, overdueAmount: 2.18 },
-    { city: "Pune", casesShared: 101, overdueAmount: 1.37 },
+    { city: "Mumbai", agencyName: "Aegis Recoveries", dpdBucket: "31-60", casesShared: 215, amountGivenToBeCollected: 3.42, amountCollected: 2.16 },
+    { city: "Delhi", agencyName: "Urban Collect", dpdBucket: "61-90", casesShared: 178, amountGivenToBeCollected: 2.96, amountCollected: 1.68 },
+    { city: "Bengaluru", agencyName: "Swift Resolve", dpdBucket: "1-30", casesShared: 142, amountGivenToBeCollected: 2.18, amountCollected: 1.41 },
+    { city: "Pune", agencyName: "Prime Field Ops", dpdBucket: "90+", casesShared: 101, amountGivenToBeCollected: 1.37, amountCollected: 0.72 },
   ],
   panelVisibility: {
     kpiCards: true, disbursementChart: true, productMix: true,
@@ -432,10 +432,29 @@ export default function App() {
   // ── Load from localStorage on mount ──
   useEffect(() => {
     const saved = lsGet(LS_DATA_KEY);
+    const normalizedFieldAgencyRows = Array.isArray(saved?.fieldAgencyCollectionsPerformance)
+      ? saved.fieldAgencyCollectionsPerformance.map((row, index) => {
+          const defaultRow = DEFAULT_DATA.fieldAgencyCollectionsPerformance[index] || {};
+          return {
+            ...defaultRow,
+            ...row,
+            amountGivenToBeCollected:
+              typeof row?.amountGivenToBeCollected === "number"
+                ? row.amountGivenToBeCollected
+                : (typeof row?.overdueAmount === "number" ? row.overdueAmount : defaultRow.amountGivenToBeCollected),
+            amountCollected:
+              typeof row?.amountCollected === "number"
+                ? row.amountCollected
+                : defaultRow.amountCollected,
+          };
+        })
+      : DEFAULT_DATA.fieldAgencyCollectionsPerformance;
+
     const hydratedData = saved
       ? {
           ...DEFAULT_DATA,
           ...saved,
+          fieldAgencyCollectionsPerformance: normalizedFieldAgencyRows,
           userWhitelistedByLender: saved.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender,
         }
       : DEFAULT_DATA;
@@ -1387,17 +1406,27 @@ export default function App() {
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:900 }}>
                   <thead>
                     <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
-                      {["City", "No. of cases shared", "Overdue amount"].map((h) => (
+                      {[
+                        "City",
+                        "Agency Name",
+                        "DPD bucket",
+                        "Number cases shared",
+                        "Amount given to be collected",
+                        "Amount collected",
+                      ].map((h) => (
                         <th key={h} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {fieldAgencyRows.map((row, i) => (
-                      <tr key={`${row.city}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                      <tr key={`${row.city}-${row.agencyName || "agency"}-${i}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
                         <td style={{ padding:"12px", color: theme.text, fontWeight:600 }}>{row.city}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.agencyName || "-"}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{row.dpdBucket || "-"}</td>
                         <td style={{ padding:"12px", color: theme.subtext }}>{row.casesShared}</td>
-                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.overdueAmount === "number" ? row.overdueAmount.toFixed(2) : "-"}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.amountGivenToBeCollected === "number" ? row.amountGivenToBeCollected.toFixed(2) : "-"}</td>
+                        <td style={{ padding:"12px", color: theme.subtext }}>{typeof row.amountCollected === "number" ? row.amountCollected.toFixed(2) : "-"}</td>
                       </tr>
                     ))}
                   </tbody>
