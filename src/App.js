@@ -1104,66 +1104,55 @@ export default function App() {
             </div>
 
             {/* Collection Funnel */}
-            <Panel title="Collection Funnel" subtitle="Month-wise stage value comparison" theme={theme}>
+            <Panel title="Collection Funnel" subtitle="Month-wise stage conversion comparison" theme={theme}>
               <div style={{ overflowX:"auto", background:theme.bg, border:`1px solid ${theme.border}`, borderRadius:12, padding:"12px 12px 10px" }}>
                 <div style={{ minWidth:980 }}>
-                  {(() => {
-                    const funnelRows = collectionsMonthlyRows.map((row) => {
-                      const totalDemand = Math.max(0, row.currentPOS || 0);
-                      const contactable = Math.max(0, totalDemand * (row.contactability || 0) / 100);
-                      const ptpReceived = Math.max(0, contactable * (data.collections.ptp || 0) / 100);
-                      const ptpHonored = Math.max(0, ptpReceived * (data.collections.ptpHonored || 0) / 100);
-                      const finallyCollected = Math.max(0, totalDemand * (data.collections.efficiency || 0) / 100);
-                      return {
-                        month: row.month,
-                        series: [
-                          { label:"Total Demand", value:totalDemand, color:theme.accent2 },
-                          { label:"Contactable", value:contactable, color:"#F59E0B" },
-                          { label:"PTP Received", value:ptpReceived, color:"#A855F7" },
-                          { label:"PTP Honored", value:ptpHonored, color:"#F97316" },
-                          { label:"Finally Collected", value:finallyCollected, color:theme.accent },
-                        ],
-                      };
-                    });
-                    const maxByStage = [0,1,2,3,4].map((idx) => Math.max(...funnelRows.map((r) => r.series[idx].value), 1));
+                  <div style={{ display:"grid", gridTemplateColumns:"150px repeat(5, minmax(120px, 1fr))", gap:8, marginBottom:8 }}>
+                    <div style={{ fontSize:10, color:theme.subtext, textTransform:"uppercase", letterSpacing:"0.05em", fontWeight:700 }}>Month</div>
+                    {[
+                      { label:"Total Demand", color:theme.accent2 },
+                      { label:"Contactable", color:"#F59E0B" },
+                      { label:"PTP Received", color:"#A855F7" },
+                      { label:"PTP Honored", color:"#F97316" },
+                      { label:"Finally Collected", color:theme.accent },
+                    ].map((stage) => (
+                      <div key={stage.label} style={{ fontSize:10, color:stage.color, textTransform:"uppercase", letterSpacing:"0.05em", fontWeight:700, textAlign:"center" }}>
+                        {stage.label}
+                      </div>
+                    ))}
+                  </div>
 
-                    return (
-                      <>
-                        <div style={{ display:"grid", gridTemplateColumns:"150px repeat(5, minmax(120px, 1fr))", gap:8, marginBottom:8 }}>
-                          <div style={{ fontSize:10, color:theme.subtext, textTransform:"uppercase", letterSpacing:"0.05em", fontWeight:700 }}>Month</div>
-                          {[
-                            { label:"Total Demand", color:theme.accent2 },
-                            { label:"Contactable", color:"#F59E0B" },
-                            { label:"PTP Received", color:"#A855F7" },
-                            { label:"PTP Honored", color:"#F97316" },
-                            { label:"Finally Collected", color:theme.accent },
-                          ].map((stage) => (
-                            <div key={stage.label} style={{ fontSize:10, color:stage.color, textTransform:"uppercase", letterSpacing:"0.05em", fontWeight:700, textAlign:"center" }}>
-                              {stage.label}
-                            </div>
-                          ))}
-                        </div>
+                  <div style={{ display:"grid", gap:8 }}>
+                    {collectionsMonthlyRows.map((row, i) => {
+                      const contactable = Math.max(0, Math.min(100, row.contactability || 0));
+                      const ptpReceived = Math.max(0, Math.min(100, contactable * (data.collections.ptp || 0) / 100));
+                      const ptpHonored = Math.max(0, Math.min(100, ptpReceived * (data.collections.ptpHonored || 0) / 100));
+                      const finallyCollected = Math.max(0, Math.min(100, contactable - (row.femi || 0) * 1.35));
+                      const funnelSeries = [
+                        { label:"Total Demand", value:100, color:theme.accent2 },
+                        { label:"Contactable", value:contactable, color:"#F59E0B" },
+                        { label:"PTP Received", value:ptpReceived, color:"#A855F7" },
+                        { label:"PTP Honored", value:ptpHonored, color:"#F97316" },
+                        { label:"Finally Collected", value:finallyCollected, color:theme.accent },
+                      ];
 
-                        <div style={{ display:"grid", gap:8 }}>
-                          {funnelRows.map((funnelRow, i) => (
-                            <div key={`${funnelRow.month}-${i}`} style={{ display:"grid", gridTemplateColumns:"150px repeat(5, minmax(120px, 1fr))", gap:8, alignItems:"center" }}>
-                              <div style={{ fontSize:11, fontWeight:700, color:theme.text }}>
-                                <EditableText value={funnelRow.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:11, fontWeight:700 }} />
+                      return (
+                        <div key={`${row.month}-${i}`} style={{ display:"grid", gridTemplateColumns:"150px repeat(5, minmax(120px, 1fr))", gap:8, alignItems:"center" }}>
+                          <div style={{ fontSize:11, fontWeight:700, color:theme.text }}>
+                            <EditableText value={row.month} onChange={v=>update(`collectionsMonthly[${i}].month`,v)} style={{ fontSize:11, fontWeight:700 }} />
+                          </div>
+                          {funnelSeries.map((stage) => (
+                            <div key={stage.label} style={{ background:theme.card, border:`1px solid ${theme.border}`, borderRadius:8, padding:"7px 8px" }}>
+                              <div style={{ height:6, background:theme.border, borderRadius:999, overflow:"hidden", marginBottom:6 }}>
+                                <div style={{ width:`${stage.value}%`, height:"100%", background:stage.color, borderRadius:999 }} />
                               </div>
-                              {funnelRow.series.map((stage, stageIndex) => (
-                                <div key={stage.label} style={{ background:theme.card, border:`1px solid ${theme.border}`, borderRadius:8, padding:"7px 8px" }}>
-                                  <div style={{ height:6, background:theme.border, borderRadius:999, overflow:"hidden", marginBottom:6 }}>
-                                    <div style={{ width:`${(stage.value / maxByStage[stageIndex]) * 100}%`, height:"100%", background:stage.color, borderRadius:999 }} />
-                                  </div>
-                                  <div style={{ fontSize:10, fontWeight:700, color:stage.color, textAlign:"center" }}>{Math.round(stage.value).toLocaleString()}</div>
-                                </div>
-                              ))}
+                              <div style={{ fontSize:10, fontWeight:700, color:stage.color, textAlign:"center" }}>{stage.value.toFixed(1)}%</div>
                             </div>
                           ))}
                         </div>
-                      </>
-                    );
-                  })()}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </Panel>
