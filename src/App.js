@@ -118,7 +118,7 @@ const DEFAULT_DATA = {
         { bucket: "180+ DPD", value: 45 },
       ],
     },
-    InCred: {
+    LTF: {
       creditQuality: { gnpa: 4.21, nnpa: 2.38, par30: 7.85, par60: 5.21, par90: 4.21, pcr: 61.8, writeOff: 1.15, creditCost: 2.68 },
       agingBucket: [
         { bucket: "Current", pct: 82.5 },
@@ -249,7 +249,7 @@ const DEFAULT_DATA = {
   lenderMix: [
     { lender: "CS (CreditSaison)", share: 45.2 },
     { lender: "IDFC", share: 32.8 },
-    { lender: "InCred", share: 15.4 },
+    { lender: "LTF", share: 15.4 },
     { lender: "Others", share: 6.6 },
   ],
   newVsRepeat: [
@@ -270,7 +270,7 @@ const DEFAULT_DATA = {
     { lender: "Total", users: 58240 },
     { lender: "CS", users: 26390 },
     { lender: "IDFC", users: 19120 },
-    { lender: "InCred", users: 8970 },
+    { lender: "LTF", users: 8970 },
     { lender: "Others", users: 3760 },
   ],
   liquidity: {
@@ -309,7 +309,7 @@ const DEFAULT_DATA = {
     agingBucket: true, creditQuality: true,
     collections: true, liquidity: true, callingFeedback: true,
   },
-  selectedLender: "ALL", // ALL / CS / IDFC / InCred
+  selectedLender: "ALL", // ALL / CS / IDFC / LTF
 };
 
 // ─── localStorage HELPERS ────────────────────────────────────────────────────
@@ -994,7 +994,7 @@ export default function App() {
                   <option value="ALL">All Lenders</option>
                   <option value="CS">CS (CreditSaison)</option>
                   <option value="IDFC">IDFC</option>
-                  <option value="InCred">InCred</option>
+                  <option value="LTF">LTF</option>
                 </select>
                 <div style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", color: theme.subtext }}>▼</div>
               </div>
