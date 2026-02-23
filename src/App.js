@@ -3,6 +3,29 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 const buildVintageCurve = (start, growth) =>
   Array.from({ length: 36 }, (_, i) => Number((start + i * growth + Math.sin(i / 3) * 0.08).toFixed(2)));
 
+const DPD_BUCKET_COLORS = ["#00D4AA", "#3B82F6", "#F59E0B", "#F97316", "#EF4444", "#7F1D1D"];
+
+const DpdAgingView = ({ title, subtitle, rows, valueFormatter, theme }) => (
+  <Panel title={title} subtitle={subtitle} theme={theme}>
+    {rows.map((row, i) => {
+      const barWidth = rows[0]?.value ? (row.value / rows[0].value) * 100 : 0;
+      return (
+        <div key={`${title}-${row.bucket}`} style={{ marginBottom:10 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
+            <span style={{ fontSize:11, color: theme.subtext }}>{row.bucket}</span>
+            <span style={{ fontSize:11, fontWeight:700, color: DPD_BUCKET_COLORS[i] }}>
+              {valueFormatter(row.value)}
+            </span>
+          </div>
+          <div style={{ background: theme.border, borderRadius:4, height:6, overflow:"hidden" }}>
+            <div style={{ width:`${barWidth}%`, background: DPD_BUCKET_COLORS[i], height:"100%", borderRadius:4 }} />
+          </div>
+        </div>
+      );
+    })}
+  </Panel>
+);
+
 // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
   meta: { companyName: "INDmoney NBFC Ltd", reportDate: "Feb 2026" },
@@ -24,6 +47,22 @@ const DEFAULT_DATA = {
         { bucket: "91-180 DPD", pct: 1.3 },
         { bucket: "180+ DPD", pct: 0.6 },
       ],
+      agingBucketVolumeCr: [
+        { bucket: "Current", value: 3349.8 },
+        { bucket: "1-30 DPD", value: 241.2 },
+        { bucket: "31-60 DPD", value: 143.9 },
+        { bucket: "61-90 DPD", value: 81.7 },
+        { bucket: "91-180 DPD", value: 50.6 },
+        { bucket: "180+ DPD", value: 23.3 },
+      ],
+      agingBucketValueCount: [
+        { bucket: "Current", value: 21254 },
+        { bucket: "1-30 DPD", value: 1530 },
+        { bucket: "31-60 DPD", value: 913 },
+        { bucket: "61-90 DPD", value: 518 },
+        { bucket: "91-180 DPD", value: 321 },
+        { bucket: "180+ DPD", value: 144 },
+      ],
     },
     CS: {
       creditQuality: { gnpa: 2.85, nnpa: 1.52, par30: 5.42, par60: 3.65, par90: 2.85, pcr: 72.1, writeOff: 0.78, creditCost: 1.85 },
@@ -34,6 +73,22 @@ const DEFAULT_DATA = {
         { bucket: "61-90 DPD", pct: 1.8 },
         { bucket: "91-180 DPD", pct: 0.9 },
         { bucket: "180+ DPD", pct: 0.4 },
+      ],
+      agingBucketVolumeCr: [
+        { bucket: "Current", value: 1923.6 },
+        { bucket: "1-30 DPD", value: 117.6 },
+        { bucket: "31-60 DPD", value: 69.7 },
+        { bucket: "61-90 DPD", value: 39.2 },
+        { bucket: "91-180 DPD", value: 19.8 },
+        { bucket: "180+ DPD", value: 8.7 },
+      ],
+      agingBucketValueCount: [
+        { bucket: "Current", value: 9492 },
+        { bucket: "1-30 DPD", value: 581 },
+        { bucket: "31-60 DPD", value: 344 },
+        { bucket: "61-90 DPD", value: 194 },
+        { bucket: "91-180 DPD", value: 97 },
+        { bucket: "180+ DPD", value: 43 },
       ],
     },
     IDFC: {
@@ -46,6 +101,22 @@ const DEFAULT_DATA = {
         { bucket: "91-180 DPD", pct: 1.4 },
         { bucket: "180+ DPD", pct: 0.5 },
       ],
+      agingBucketVolumeCr: [
+        { bucket: "Current", value: 1331.8 },
+        { bucket: "1-30 DPD", value: 112.3 },
+        { bucket: "31-60 DPD", value: 68.0 },
+        { bucket: "61-90 DPD", value: 39.5 },
+        { bucket: "91-180 DPD", value: 22.1 },
+        { bucket: "180+ DPD", value: 7.9 },
+      ],
+      agingBucketValueCount: [
+        { bucket: "Current", value: 7675 },
+        { bucket: "1-30 DPD", value: 647 },
+        { bucket: "31-60 DPD", value: 392 },
+        { bucket: "61-90 DPD", value: 228 },
+        { bucket: "91-180 DPD", value: 127 },
+        { bucket: "180+ DPD", value: 45 },
+      ],
     },
     InCred: {
       creditQuality: { gnpa: 4.21, nnpa: 2.38, par30: 7.85, par60: 5.21, par90: 4.21, pcr: 61.8, writeOff: 1.15, creditCost: 2.68 },
@@ -56,6 +127,22 @@ const DEFAULT_DATA = {
         { bucket: "61-90 DPD", pct: 2.8 },
         { bucket: "91-180 DPD", pct: 1.6 },
         { bucket: "180+ DPD", pct: 0.4 },
+      ],
+      agingBucketVolumeCr: [
+        { bucket: "Current", value: 443.1 },
+        { bucket: "1-30 DPD", value: 41.9 },
+        { bucket: "31-60 DPD", value: 26.3 },
+        { bucket: "61-90 DPD", value: 15.0 },
+        { bucket: "91-180 DPD", value: 8.6 },
+        { bucket: "180+ DPD", value: 2.1 },
+      ],
+      agingBucketValueCount: [
+        { bucket: "Current", value: 4087 },
+        { bucket: "1-30 DPD", value: 386 },
+        { bucket: "31-60 DPD", value: 243 },
+        { bucket: "61-90 DPD", value: 139 },
+        { bucket: "91-180 DPD", value: 79 },
+        { bucket: "180+ DPD", value: 20 },
       ],
     },
   },
@@ -916,26 +1003,39 @@ export default function App() {
               </div>
             </div>
 
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3, minmax(0, 1fr))", gap:14, marginBottom:14 }}>
               {/* DPD Aging Bucket (moved from Overview) - now reactive to lender */}
               {pv.agingBucket && (
                 <Panel title="DPD Aging Bucket" subtitle={`Overdue distribution for ${data.selectedLender === "ALL" ? "all lenders" : data.selectedLender}`} theme={theme} onHide={()=>togglePanel("agingBucket")}>
-                  {data.lenderData[data.selectedLender].agingBucket.map((b, i) => {
-                    const clrs=["#00D4AA","#3B82F6","#F59E0B","#F97316","#EF4444","#7F1D1D"];
-                    return (
-                      <div key={i} style={{ marginBottom:10 }}>
-                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
-                          <span style={{ fontSize:11, color: theme.subtext }}>{b.bucket}</span>
-                          <span style={{ fontSize:11, fontWeight:700, color: clrs[i] }}>{b.pct.toFixed(1)}%</span>
-                        </div>
-                        <div style={{ background: theme.border, borderRadius:4, height:6, overflow:"hidden" }}>
-                          <div style={{ width:`${b.pct}%`, background: clrs[i], height:"100%", borderRadius:4 }} />
-                        </div>
+                  {data.lenderData[data.selectedLender].agingBucket.map((b, i) => (
+                    <div key={i} style={{ marginBottom:10 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
+                        <span style={{ fontSize:11, color: theme.subtext }}>{b.bucket}</span>
+                        <span style={{ fontSize:11, fontWeight:700, color: DPD_BUCKET_COLORS[i] }}>{b.pct.toFixed(1)}%</span>
                       </div>
-                    );
-                  })}
+                      <div style={{ background: theme.border, borderRadius:4, height:6, overflow:"hidden" }}>
+                        <div style={{ width:`${b.pct}%`, background: DPD_BUCKET_COLORS[i], height:"100%", borderRadius:4 }} />
+                      </div>
+                    </div>
+                  ))}
                 </Panel>
               )}
+
+              <DpdAgingView
+                title="DPD Aging Bucket by Volume"
+                subtitle={`Overdue distribution in ₹ Cr for ${data.selectedLender === "ALL" ? "all lenders" : data.selectedLender}`}
+                rows={data.lenderData[data.selectedLender].agingBucketVolumeCr}
+                valueFormatter={(value) => `₹${value.toFixed(1)} Cr`}
+                theme={theme}
+              />
+
+              <DpdAgingView
+                title="DPD Aging Bucket by Value"
+                subtitle={`Overdue distribution by loan count for ${data.selectedLender === "ALL" ? "all lenders" : data.selectedLender}`}
+                rows={data.lenderData[data.selectedLender].agingBucketValueCount}
+                valueFormatter={(value) => Number(value).toLocaleString()}
+                theme={theme}
+              />
             </div>
 
             <Panel title="Custom Query View" subtitle="Credit quality vintage by disbursement month" theme={theme}>
