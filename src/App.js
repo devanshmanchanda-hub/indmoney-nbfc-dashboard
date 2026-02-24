@@ -519,10 +519,29 @@ export default function App() {
   // ── Load from localStorage on mount ──
   useEffect(() => {
     const saved = lsGet(LS_DATA_KEY);
+    const normalizedFieldAgencyRows = Array.isArray(saved?.fieldAgencyCollectionsPerformance)
+      ? saved.fieldAgencyCollectionsPerformance.map((row, index) => {
+          const defaultRow = DEFAULT_DATA.fieldAgencyCollectionsPerformance[index] || {};
+          return {
+            ...defaultRow,
+            ...row,
+            amountGivenToBeCollected:
+              typeof row?.amountGivenToBeCollected === "number"
+                ? row.amountGivenToBeCollected
+                : (typeof row?.overdueAmount === "number" ? row.overdueAmount : defaultRow.amountGivenToBeCollected),
+            amountCollected:
+              typeof row?.amountCollected === "number"
+                ? row.amountCollected
+                : defaultRow.amountCollected,
+          };
+        })
+      : DEFAULT_DATA.fieldAgencyCollectionsPerformance;
+
     const hydratedData = saved
       ? {
           ...DEFAULT_DATA,
           ...saved,
+          fieldAgencyCollectionsPerformance: normalizedFieldAgencyRows,
           userWhitelistedByLender: saved.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender,
         }
       : DEFAULT_DATA;
