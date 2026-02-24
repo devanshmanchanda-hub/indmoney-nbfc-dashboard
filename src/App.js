@@ -4,6 +4,31 @@ const buildVintageCurve = (start, growth) =>
   Array.from({ length: 36 }, (_, i) => Number((start + i * growth + Math.sin(i / 3) * 0.08).toFixed(2)));
 
 const DPD_BUCKET_COLORS = ["#00D4AA", "#3B82F6", "#F59E0B", "#F97316", "#EF4444", "#7F1D1D"];
+const DUE_DATE_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
+const DUE_DATE_COLLECTION_ROWS = [
+  "EMIs due",
+  "EMIs collected in advance",
+  "EMIs on time",
+  "Within 3 days",
+  "Within 5 days",
+  "Within 10 days",
+  "Within 15 days",
+  "Within 30 days",
+  "Within 60 days",
+  "Within 90 days",
+  "Collected post 90 days",
+  "Uncollected as on date",
+];
+const DUE_DATE_DELINQUENCY_ROWS = [
+  "POS due",
+  "0+ DPD (% Amount)",
+  "3+ DPD (% Amount)",
+  "5+ DPD (% Amount)",
+  "10+ DPD (% Amount)",
+  "30+ DPD (% Amount)",
+  "60+ DPD (% Amount)",
+  "90+ DPD (% Amount)",
+];
 
 const DpdAgingView = ({ title, subtitle, rows, valueFormatter, theme }) => (
   <Panel title={title} subtitle={subtitle} theme={theme}>
@@ -513,6 +538,7 @@ export default function App() {
   const [editMode,    setEditMode]    = useState(false);
   const [showSettings,setShowSettings]= useState(false);
   const [saved,       setSaved]       = useState(false);
+  const [dueDateTopView, setDueDateTopView] = useState("value");
 
   const theme = THEMES[themeName];
 
@@ -586,7 +612,7 @@ export default function App() {
   const fieldAgencyRows = data.fieldAgencyCollectionsPerformance || DEFAULT_DATA.fieldAgencyCollectionsPerformance || [];
   const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
   const userWhitelistedRows = data.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender || [];
-  const NAV_TABS = ["Overview","Credit Quality","Collections","Agent Performance","Field agency collections performance","Calling feedback"];
+  const NAV_TABS = ["Overview","Credit Quality","Collections","Due date based monitoring","Agent Performance","Field agency collections performance","Calling feedback"];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -1440,9 +1466,93 @@ export default function App() {
           </div>
         )}
         {/* ══════════════════════════════════════════════
-            TAB 4 — AGENT PERFORMANCE
+            TAB 3 — DUE DATE BASED MONITORING
         ══════════════════════════════════════════════ */}
         {activeTab === 3 && (
+          <div>
+            <Panel title="Due date based monitoring" subtitle="Month level collections and delinquency" theme={theme}>
+              <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+                {[
+                  { key: "value", label: "By Value" },
+                  { key: "volume", label: "By Volume" },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setDueDateTopView(opt.key)}
+                    style={{
+                      padding:"6px 12px",
+                      borderRadius:8,
+                      fontSize:11,
+                      fontWeight:700,
+                      border:`1px solid ${theme.border}`,
+                      cursor:"pointer",
+                      background: dueDateTopView === opt.key ? theme.accent+"22" : "transparent",
+                      color: dueDateTopView === opt.key ? theme.accent : theme.subtext,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1100 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color: theme.text, fontSize:12, fontWeight:800, whiteSpace:"nowrap" }}>
+                        Month level collections ({dueDateTopView === "value" ? "By Value" : "By Volume"})
+                      </th>
+                      {DUE_DATE_MONTHS.map((month) => (
+                        <th key={`due-month-${month}`} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, whiteSpace:"nowrap" }}>{month}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DUE_DATE_COLLECTION_ROWS.map((label) => (
+                      <tr key={`due-row-${label}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px 12px", color: theme.text, fontWeight:500, whiteSpace:"nowrap" }}>{label}</td>
+                        {DUE_DATE_MONTHS.map((month) => (
+                          <td key={`due-cell-${label}-${month}`} style={{ padding:"8px 12px", color: theme.subtext }}>-</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Month level delinquency" subtitle="By Value" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1100 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color: theme.text, fontSize:12, fontWeight:800, whiteSpace:"nowrap" }}>
+                        Month level delinquency
+                      </th>
+                      {DUE_DATE_MONTHS.map((month) => (
+                        <th key={`delinq-month-${month}`} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, whiteSpace:"nowrap" }}>{month}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DUE_DATE_DELINQUENCY_ROWS.map((label) => (
+                      <tr key={`delinq-row-${label}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px 12px", color: theme.text, fontWeight:500, whiteSpace:"nowrap" }}>{label}</td>
+                        {DUE_DATE_MONTHS.map((month) => (
+                          <td key={`delinq-cell-${label}-${month}`} style={{ padding:"8px 12px", color: theme.subtext }}>-</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB 4 — AGENT PERFORMANCE
+        ══════════════════════════════════════════════ */}
+        {activeTab === 4 && (
           <div>
             <Panel title="Agent Performance" subtitle="Agent-wise collections performance" theme={theme}>
               <div style={{ overflowX:"auto" }}>
@@ -1473,7 +1583,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 5 — FIELD AGENCY COLLECTIONS PERFORMANCE
         ══════════════════════════════════════════════ */}
-        {activeTab === 4 && (
+        {activeTab === 5 && (
           <div>
             <Panel title="Field agency collections performance" subtitle="City-wise field agency coverage" theme={theme}>
               <div style={{ overflowX:"auto" }}>
@@ -1513,7 +1623,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 5 — CALLING FEEDBACK
         ══════════════════════════════════════════════ */}
-        {activeTab === 5 && (pv.callingFeedback ?? true) && (
+        {activeTab === 6 && (pv.callingFeedback ?? true) && (
           <div>
             <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
               <div style={{ overflowX:"auto" }}>
