@@ -4,6 +4,74 @@ const buildVintageCurve = (start, growth) =>
   Array.from({ length: 36 }, (_, i) => Number((start + i * growth + Math.sin(i / 3) * 0.08).toFixed(2)));
 
 const DPD_BUCKET_COLORS = ["#00D4AA", "#3B82F6", "#F59E0B", "#F97316", "#EF4444", "#7F1D1D"];
+const DUE_DATE_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
+const DUE_DATE_COLLECTION_ROWS = [
+  "EMIs due",
+  "EMIs collected in advance",
+  "EMIs on time",
+  "Within 3 days",
+  "Within 5 days",
+  "Within 10 days",
+  "Within 15 days",
+  "Within 30 days",
+  "Within 60 days",
+  "Within 90 days",
+  "Collected post 90 days",
+  "Uncollected as on date",
+];
+const DUE_DATE_DELINQUENCY_ROWS = [
+  "POS due",
+  "0+ DPD (% Amount)",
+  "3+ DPD (% Amount)",
+  "5+ DPD (% Amount)",
+  "10+ DPD (% Amount)",
+  "30+ DPD (% Amount)",
+  "60+ DPD (% Amount)",
+  "90+ DPD (% Amount)",
+];
+
+
+const DUE_DATE_COLLECTION_SAMPLE = {
+  value: {
+    "EMIs due": ["52,840", "54,120", "55,480", "56,710", "58,090", "59,430", "60,980", "62,310", "63,540", "64,920", "66,380"],
+    "EMIs collected in advance": ["2,680", "2,790", "2,910", "3,020", "3,160", "3,260", "3,390", "3,510", "3,640", "3,780", "3,940"],
+    "EMIs on time": ["41,920", "42,980", "44,050", "45,120", "46,310", "47,280", "48,410", "49,560", "50,470", "51,620", "52,810"],
+    "Within 3 days": ["3,910", "4,020", "4,090", "4,160", "4,280", "4,340", "4,460", "4,590", "4,680", "4,770", "4,850"],
+    "Within 5 days": ["1,890", "1,930", "1,980", "2,040", "2,110", "2,140", "2,180", "2,250", "2,290", "2,330", "2,390"],
+    "Within 10 days": ["1,320", "1,360", "1,390", "1,430", "1,470", "1,500", "1,530", "1,580", "1,620", "1,660", "1,710"],
+    "Within 15 days": ["840", "860", "880", "900", "930", "950", "970", "990", "1,010", "1,030", "1,060"],
+    "Within 30 days": ["610", "630", "650", "670", "690", "710", "730", "750", "770", "790", "810"],
+    "Within 60 days": ["420", "430", "440", "460", "470", "480", "490", "500", "510", "520", "540"],
+    "Within 90 days": ["260", "270", "280", "290", "300", "310", "320", "330", "340", "350", "360"],
+    "Collected post 90 days": ["190", "200", "210", "220", "230", "240", "250", "260", "270", "280", "290"],
+    "Uncollected as on date": ["-180", "-150", "-140", "-145", "-155", "-165", "-175", "-185", "-200", "-220", "-260"],
+  },
+  volume: {
+    "EMIs due": ["₹128.4 Cr", "₹133.1 Cr", "₹136.8 Cr", "₹140.2 Cr", "₹145.5 Cr", "₹149.9 Cr", "₹154.1 Cr", "₹159.8 Cr", "₹162.6 Cr", "₹167.3 Cr", "₹171.9 Cr"],
+    "EMIs collected in advance": ["₹5.8 Cr", "₹6.1 Cr", "₹6.4 Cr", "₹6.9 Cr", "₹7.2 Cr", "₹7.6 Cr", "₹8.0 Cr", "₹8.3 Cr", "₹8.7 Cr", "₹9.0 Cr", "₹9.5 Cr"],
+    "EMIs on time": ["₹104.5 Cr", "₹107.2 Cr", "₹109.6 Cr", "₹112.8 Cr", "₹116.1 Cr", "₹119.4 Cr", "₹122.0 Cr", "₹126.4 Cr", "₹128.8 Cr", "₹132.1 Cr", "₹135.0 Cr"],
+    "Within 3 days": ["₹7.6 Cr", "₹8.0 Cr", "₹8.1 Cr", "₹8.3 Cr", "₹8.7 Cr", "₹8.8 Cr", "₹9.0 Cr", "₹9.4 Cr", "₹9.6 Cr", "₹9.8 Cr", "₹10.1 Cr"],
+    "Within 5 days": ["₹4.2 Cr", "₹4.3 Cr", "₹4.5 Cr", "₹4.8 Cr", "₹5.0 Cr", "₹5.1 Cr", "₹5.2 Cr", "₹5.4 Cr", "₹5.5 Cr", "₹5.7 Cr", "₹5.9 Cr"],
+    "Within 10 days": ["₹3.0 Cr", "₹3.2 Cr", "₹3.4 Cr", "₹3.5 Cr", "₹3.7 Cr", "₹3.8 Cr", "₹3.9 Cr", "₹4.1 Cr", "₹4.2 Cr", "₹4.4 Cr", "₹4.6 Cr"],
+    "Within 15 days": ["₹1.8 Cr", "₹1.9 Cr", "₹2.0 Cr", "₹2.1 Cr", "₹2.2 Cr", "₹2.3 Cr", "₹2.4 Cr", "₹2.5 Cr", "₹2.6 Cr", "₹2.7 Cr", "₹2.9 Cr"],
+    "Within 30 days": ["₹1.2 Cr", "₹1.3 Cr", "₹1.4 Cr", "₹1.5 Cr", "₹1.6 Cr", "₹1.7 Cr", "₹1.8 Cr", "₹1.9 Cr", "₹2.0 Cr", "₹2.1 Cr", "₹2.2 Cr"],
+    "Within 60 days": ["₹0.9 Cr", "₹1.0 Cr", "₹1.0 Cr", "₹1.1 Cr", "₹1.1 Cr", "₹1.2 Cr", "₹1.2 Cr", "₹1.3 Cr", "₹1.3 Cr", "₹1.4 Cr", "₹1.5 Cr"],
+    "Within 90 days": ["₹0.5 Cr", "₹0.6 Cr", "₹0.6 Cr", "₹0.6 Cr", "₹0.7 Cr", "₹0.7 Cr", "₹0.8 Cr", "₹0.8 Cr", "₹0.8 Cr", "₹0.9 Cr", "₹0.9 Cr"],
+    "Collected post 90 days": ["₹0.4 Cr", "₹0.4 Cr", "₹0.5 Cr", "₹0.5 Cr", "₹0.5 Cr", "₹0.6 Cr", "₹0.6 Cr", "₹0.6 Cr", "₹0.7 Cr", "₹0.7 Cr", "₹0.8 Cr"],
+    "Uncollected as on date": ["₹-1.5 Cr", "₹-1.2 Cr", "₹-1.1 Cr", "₹-1.2 Cr", "₹-1.3 Cr", "₹-1.3 Cr", "₹-1.4 Cr", "₹-1.5 Cr", "₹-1.6 Cr", "₹-1.8 Cr", "₹-2.1 Cr"],
+  },
+};
+
+const DUE_DATE_DELINQUENCY_SAMPLE = {
+  "POS due": ["₹3,140 Cr", "₹3,220 Cr", "₹3,280 Cr", "₹3,350 Cr", "₹3,430 Cr", "₹3,510 Cr", "₹3,620 Cr", "₹3,710 Cr", "₹3,790 Cr", "₹3,880 Cr", "₹3,960 Cr"],
+  "0+ DPD (% Amount)": ["4.8%", "4.9%", "5.1%", "5.0%", "5.2%", "5.3%", "5.4%", "5.5%", "5.6%", "5.8%", "5.9%"],
+  "3+ DPD (% Amount)": ["3.9%", "4.0%", "4.1%", "4.2%", "4.3%", "4.4%", "4.5%", "4.6%", "4.7%", "4.8%", "4.9%"],
+  "5+ DPD (% Amount)": ["3.4%", "3.5%", "3.6%", "3.7%", "3.8%", "3.9%", "4.0%", "4.1%", "4.2%", "4.3%", "4.4%"],
+  "10+ DPD (% Amount)": ["2.8%", "2.9%", "3.0%", "3.1%", "3.1%", "3.2%", "3.3%", "3.4%", "3.5%", "3.6%", "3.7%"],
+  "30+ DPD (% Amount)": ["2.1%", "2.2%", "2.3%", "2.3%", "2.4%", "2.5%", "2.6%", "2.7%", "2.8%", "2.9%", "3.0%"],
+  "60+ DPD (% Amount)": ["1.5%", "1.6%", "1.6%", "1.7%", "1.8%", "1.8%", "1.9%", "2.0%", "2.1%", "2.2%", "2.3%"],
+  "90+ DPD (% Amount)": ["1.1%", "1.1%", "1.2%", "1.2%", "1.3%", "1.4%", "1.4%", "1.5%", "1.6%", "1.6%", "1.7%"],
+};
 
 const DpdAgingView = ({ title, subtitle, rows, valueFormatter, theme }) => (
   <Panel title={title} subtitle={subtitle} theme={theme}>
@@ -513,6 +581,7 @@ export default function App() {
   const [editMode,    setEditMode]    = useState(false);
   const [showSettings,setShowSettings]= useState(false);
   const [saved,       setSaved]       = useState(false);
+  const [dueDateTopView, setDueDateTopView] = useState("value");
 
   const theme = THEMES[themeName];
 
@@ -586,7 +655,7 @@ export default function App() {
   const fieldAgencyRows = data.fieldAgencyCollectionsPerformance || DEFAULT_DATA.fieldAgencyCollectionsPerformance || [];
   const collectionsMonthlyRows = data.collectionsMonthly || DEFAULT_DATA.collectionsMonthly || [];
   const userWhitelistedRows = data.userWhitelistedByLender || DEFAULT_DATA.userWhitelistedByLender || [];
-  const NAV_TABS = ["Overview","Credit Quality","Collections","Agent Performance","Field agency collections performance","Calling feedback"];
+  const NAV_TABS = ["Overview","Credit Quality","Collections","Due date based monitoring","Agent Performance","Field agency collections performance","Calling feedback"];
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -1440,9 +1509,93 @@ export default function App() {
           </div>
         )}
         {/* ══════════════════════════════════════════════
-            TAB 4 — AGENT PERFORMANCE
+            TAB 3 — DUE DATE BASED MONITORING
         ══════════════════════════════════════════════ */}
         {activeTab === 3 && (
+          <div>
+            <Panel title="Due date based monitoring" subtitle="Month level collections and delinquency" theme={theme}>
+              <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+                {[
+                  { key: "value", label: "By Value" },
+                  { key: "volume", label: "By Volume" },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setDueDateTopView(opt.key)}
+                    style={{
+                      padding:"6px 12px",
+                      borderRadius:8,
+                      fontSize:11,
+                      fontWeight:700,
+                      border:`1px solid ${theme.border}`,
+                      cursor:"pointer",
+                      background: dueDateTopView === opt.key ? theme.accent+"22" : "transparent",
+                      color: dueDateTopView === opt.key ? theme.accent : theme.subtext,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1100 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color: theme.text, fontSize:12, fontWeight:800, whiteSpace:"nowrap" }}>
+                        Month level collections ({dueDateTopView === "value" ? "By Value" : "By Volume"})
+                      </th>
+                      {DUE_DATE_MONTHS.map((month) => (
+                        <th key={`due-month-${month}`} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, whiteSpace:"nowrap" }}>{month}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DUE_DATE_COLLECTION_ROWS.map((label) => (
+                      <tr key={`due-row-${label}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px 12px", color: theme.text, fontWeight:500, whiteSpace:"nowrap" }}>{label}</td>
+                        {DUE_DATE_MONTHS.map((month) => (
+                          <td key={`due-cell-${label}-${month}`} style={{ padding:"8px 12px", color: theme.subtext }}>{DUE_DATE_COLLECTION_SAMPLE[dueDateTopView]?.[label]?.[DUE_DATE_MONTHS.indexOf(month)] ?? "-"}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            <Panel title="Month level delinquency" subtitle="By Value" theme={theme} style={{ marginTop:14 }}>
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1100 }}>
+                  <thead>
+                    <tr style={{ borderBottom:`2px solid ${theme.border}` }}>
+                      <th style={{ padding:"10px 12px", textAlign:"left", color: theme.text, fontSize:12, fontWeight:800, whiteSpace:"nowrap" }}>
+                        Month level delinquency
+                      </th>
+                      {DUE_DATE_MONTHS.map((month) => (
+                        <th key={`delinq-month-${month}`} style={{ padding:"10px 12px", textAlign:"left", color: theme.subtext, fontSize:11, fontWeight:700, whiteSpace:"nowrap" }}>{month}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DUE_DATE_DELINQUENCY_ROWS.map((label) => (
+                      <tr key={`delinq-row-${label}`} style={{ borderBottom:`1px solid ${theme.border}` }}>
+                        <td style={{ padding:"8px 12px", color: theme.text, fontWeight:500, whiteSpace:"nowrap" }}>{label}</td>
+                        {DUE_DATE_MONTHS.map((month) => (
+                          <td key={`delinq-cell-${label}-${month}`} style={{ padding:"8px 12px", color: theme.subtext }}>{DUE_DATE_DELINQUENCY_SAMPLE[label]?.[DUE_DATE_MONTHS.indexOf(month)] ?? "-"}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════
+            TAB 4 — AGENT PERFORMANCE
+        ══════════════════════════════════════════════ */}
+        {activeTab === 4 && (
           <div>
             <Panel title="Agent Performance" subtitle="Agent-wise collections performance" theme={theme}>
               <div style={{ overflowX:"auto" }}>
@@ -1473,7 +1626,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 5 — FIELD AGENCY COLLECTIONS PERFORMANCE
         ══════════════════════════════════════════════ */}
-        {activeTab === 4 && (
+        {activeTab === 5 && (
           <div>
             <Panel title="Field agency collections performance" subtitle="City-wise field agency coverage" theme={theme}>
               <div style={{ overflowX:"auto" }}>
@@ -1513,7 +1666,7 @@ export default function App() {
         {/* ══════════════════════════════════════════════
             TAB 5 — CALLING FEEDBACK
         ══════════════════════════════════════════════ */}
-        {activeTab === 5 && (pv.callingFeedback ?? true) && (
+        {activeTab === 6 && (pv.callingFeedback ?? true) && (
           <div>
             <Panel title="Calling Feedback" subtitle="Agent-wise call outcomes and customer response" theme={theme}>
               <div style={{ overflowX:"auto" }}>
