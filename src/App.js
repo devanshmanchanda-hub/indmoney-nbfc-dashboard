@@ -1312,6 +1312,39 @@ export default function App() {
               </div>
             </Panel>
 
+            {/* DPD Summary Views by Segment */}
+            {COLLECTIONS_DPD_SUMMARY_TABLES.map(({ title, subtitle, rows }) => (
+              <Panel key={title} title={title} subtitle={subtitle} theme={theme} style={{ marginTop: 16 }}>
+                <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1550 }}>
+                    <thead>
+                      <tr>
+                        {CREDIT_QUALITY_DPD_SUMMARY_COLUMNS.map((col, idx) => (
+                          <Th key={`${title}-${col}`} theme={theme} style={{ position: idx === 0 ? "sticky" : "static", left: idx === 0 ? 0 : undefined, zIndex: idx === 0 ? 2 : 1 }}>{col}</Th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((row, rowIdx) => (
+                        <tr key={`${title}-row-${rowIdx}`}>
+                          {row.map((cell, cellIdx) => (
+                            <Td
+                              key={`${title}-cell-${rowIdx}-${cellIdx}`}
+                              theme={theme}
+                              bold={cellIdx === 0}
+                              style={{ position: cellIdx === 0 ? "sticky" : "static", left: cellIdx === 0 ? 0 : undefined, background: cellIdx === 0 ? theme.card : "transparent", zIndex: cellIdx === 0 ? 1 : 0 }}
+                            >
+                              {cell}
+                            </Td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Panel>
+            ))}
+
             <Panel title="POS Bucket Split" subtitle="Month-wise current POS and DPD bucket distribution" theme={theme} style={{ marginTop: 16 }}>
               <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1600 }}>
