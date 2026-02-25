@@ -62,7 +62,7 @@ const DUE_DATE_COLLECTION_SAMPLE = {
 };
 
 const DUE_DATE_DELINQUENCY_SAMPLE = {
-  "POS due": ["3,140 ", "3,220", "3,280", "3,350", "3,430", "3,510 ", "3,620 ", "3,710 ", "3,790 ", "3,880 ", "3,960 "],
+  "POS due": ["₹3,140 Cr", "₹3,220 Cr", "₹3,280 Cr", "₹3,350 Cr", "₹3,430 Cr", "₹3,510 Cr", "₹3,620 Cr", "₹3,710 Cr", "₹3,790 Cr", "₹3,880 Cr", "₹3,960 Cr"],
   "0+ DPD (% Amount)": ["4.8%", "4.9%", "5.1%", "5.0%", "5.2%", "5.3%", "5.4%", "5.5%", "5.6%", "5.8%", "5.9%"],
   "3+ DPD (% Amount)": ["3.9%", "4.0%", "4.1%", "4.2%", "4.3%", "4.4%", "4.5%", "4.6%", "4.7%", "4.8%", "4.9%"],
   "5+ DPD (% Amount)": ["3.4%", "3.5%", "3.6%", "3.7%", "3.8%", "3.9%", "4.0%", "4.1%", "4.2%", "4.3%", "4.4%"],
@@ -398,7 +398,7 @@ const DEFAULT_DATA = {
   selectedLender: "ALL",
 };
 
-const LS_DATA_KEY = "nbfc_dashboard_data_v4";
+const LS_DATA_KEY = "nbfc_dashboard_data_v5";
 const LS_THEME_KEY = "nbfc_dashboard_theme_v2";
 
 function lsGet(key) {
@@ -948,7 +948,7 @@ export default function App() {
 
             {/* Lender Mix + New vs Repeat + Whitelisted */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-              <Panel title="Lender-wise Portfolio Mix" subtitle="Month-wise stacked contribution" theme={theme}>
+              <Panel title="Lender-wise Disbursal amount" subtitle="Month-wise stacked contribution" theme={theme}>
                 <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 220 }}>
                   {data.monthly.map((total, mi) => {
                     const maxTotal = Math.max(...data.monthly);
