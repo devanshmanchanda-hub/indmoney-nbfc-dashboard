@@ -72,6 +72,26 @@ const DUE_DATE_DELINQUENCY_SAMPLE = {
   "90+ DPD (% Amount)": ["1.1%", "1.1%", "1.2%", "1.2%", "1.3%", "1.4%", "1.4%", "1.5%", "1.6%", "1.6%", "1.7%"],
 };
 
+const parseDueDateNumeric = (rawValue) => {
+  const cleaned = String(rawValue ?? "").replace(/,/g, "");
+  const matched = cleaned.match(/-?\d*\.?\d+/);
+  return matched ? Number(matched[0]) : 0;
+};
+
+const formatDueDateCollectionCell = (view, rowLabel, monthIndex) => {
+  const currentValue = DUE_DATE_COLLECTION_SAMPLE[view]?.[rowLabel]?.[monthIndex];
+  if (currentValue === undefined) return "—";
+
+  if (rowLabel === DUE_DATE_COLLECTION_ROWS[0]) return currentValue;
+
+  const baseValue = DUE_DATE_COLLECTION_SAMPLE[view]?.[DUE_DATE_COLLECTION_ROWS[0]]?.[monthIndex];
+  const denominator = parseDueDateNumeric(baseValue);
+  if (!denominator) return "0.0%";
+
+  const pct = (parseDueDateNumeric(currentValue) / denominator) * 100;
+  return `${pct.toFixed(1)}%`;
+};
+
 const DpdAgingView = ({ title, subtitle, rows, valueFormatter, theme }) => (
   <Panel title={title} subtitle={subtitle} theme={theme}>
     {rows.map((row, i) => {
@@ -1461,7 +1481,7 @@ export default function App() {
                       <tr key={`due-row-${label}`}>
                         <Td theme={theme} bold>{label}</Td>
                         {DUE_DATE_MONTHS.map(month => (
-                          <Td key={`due-cell-${label}-${month}`} theme={theme}>{DUE_DATE_COLLECTION_SAMPLE[dueDateTopView]?.[label]?.[DUE_DATE_MONTHS.indexOf(month)] ?? "—"}</Td>
+                          <Td key={`due-cell-${label}-${month}`} theme={theme}>{formatDueDateCollectionCell(dueDateTopView, label, DUE_DATE_MONTHS.indexOf(month))}</Td>
                         ))}
                       </tr>
                     ))}
