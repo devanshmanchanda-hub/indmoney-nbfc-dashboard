@@ -1639,33 +1639,7 @@ export default function App() {
               </div>
             </Panel>
 
-            <Panel title="User Level Collection" subtitle="User-wise collections and calling summary" theme={theme} style={{ marginTop: 16 }}>
-              <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1200 }}>
-                  <thead>
-                    <tr>
-                      {["User ID", "Times Called", "Max DPD", "Amount Overdue", "Total Amount O/S", "Last Agent Called", "Call Date & Time", "User Response"].map(h => (
-                        <Th key={h} theme={theme}>{h}</Th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userLevelCollectionRows.map((row, i) => (
-                      <tr key={`${row.userId}-${i}`}>
-                        <Td theme={theme} bold>{row.userId}</Td>
-                        <Td theme={theme}>{row.timesCalled}</Td>
-                        <Td theme={theme}>{row.maxDpd}</Td>
-                        <Td theme={theme}>{typeof row.amountOverdue === "number" ? row.amountOverdue.toFixed(2) : "—"}</Td>
-                        <Td theme={theme}>{typeof row.totalOutstanding === "number" ? row.totalOutstanding.toFixed(2) : "—"}</Td>
-                        <Td theme={theme}>{row.lastAgentCalled}</Td>
-                        <Td theme={theme}>{row.callDateTime}</Td>
-                        <Td theme={theme}>{row.userResponse}</Td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Panel>
+            
           </div>
         )}
 
