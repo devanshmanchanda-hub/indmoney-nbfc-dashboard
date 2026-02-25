@@ -1228,26 +1228,34 @@ export default function App() {
                 theme={theme}
               />
             </div>
-
-            <Panel title="Custom Query View" subtitle="Credit quality vintage by disbursement month" theme={theme}>
+            <Panel title="POS Bucket Split" subtitle="Month-wise current POS and DPD bucket distribution" theme={theme} style={{ marginTop: 16 }}>
               <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 2600, fontSize: 11 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1600 }}>
                   <thead>
                     <tr>
-                      {["disbursement_month","loans","users","disbursed_value_cr",...Array.from({ length: 36 }, (_, idx) => `m${idx+1}`)].map((h) => (
-                        <Th key={h} theme={theme}>{h}</Th>
-                      ))}
+                      <Th theme={theme} style={{ position: "sticky", left: 0, zIndex: 2 }}>Metric</Th>
+                      {monthOrder.map(m => <Th key={m} theme={theme}>{m}</Th>)}
                     </tr>
                   </thead>
                   <tbody>
-                    {creditQualityRows.map((row, ri) => (
-                      <tr key={`${row.disbursement_month || "row"}-${ri}`}>
-                        <Td theme={theme} bold>{row.disbursement_month}</Td>
-                        <Td theme={theme}>{row.loans.toLocaleString()}</Td>
-                        <Td theme={theme}>{row.users.toLocaleString()}</Td>
-                        <Td theme={theme}>{row.disbursed_value_cr.toFixed(2)}</Td>
-                        {Array.from({ length: 36 }, (_, mi) => row.m?.[mi]).map((value, mi) => (
-                          <Td key={mi} theme={theme}>{value || value === 0 ? Number(value).toFixed(2) : ""}</Td>
+                    {[
+                      { label: "Current POS", key: "currentPOS" },
+                      { label: "POS — No DPD (Current Bucket)", key: "currentBucket" },
+                      { label: "POS — DPD 1-30 (Bucket X)", key: "bucketX" },
+                      { label: "POS — DPD 31-60 (Bucket 1)", key: "bucket1" },
+                      { label: "POS — DPD 61-90 (Bucket 2)", key: "bucket2" },
+                      { label: "POS — DPD 90+ (Bucket 3)", key: "bucket3" },
+                    ].map((metric) => (
+                      <tr key={metric.key}>
+                        <Td theme={theme} bold style={{ position: "sticky", left: 0, background: theme.card, zIndex: 1 }}>{metric.label}</Td>
+                        {posByMonth.map((row, i) => (
+                          <Td key={`${metric.key}-${monthOrder[i]}`} theme={theme} style={{ textAlign: "center" }}>
+                            {typeof row[metric.key] === "number"
+                              ? metric.key === "currentPOS"
+                                ? row[metric.key].toLocaleString()
+                                : `${((row[metric.key] / (row.currentPOS || 1)) * 100).toFixed(1)}%`
+                              : "—"}
+                          </Td>
                         ))}
                       </tr>
                     ))}
@@ -1255,6 +1263,7 @@ export default function App() {
                 </table>
               </div>
             </Panel>
+
 
             <Panel title="Summary" subtitle="Month-wise disbursal and first EMI quality metrics" theme={theme} style={{ marginTop: 16 }}>
               <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
@@ -1285,6 +1294,36 @@ export default function App() {
                 </table>
               </div>
             </Panel>
+
+
+            <Panel title="Custom Query View" subtitle="Credit quality vintage by disbursement month" theme={theme}>
+              <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 2600, fontSize: 11 }}>
+                  <thead>
+                    <tr>
+                      {["disbursement_month","loans","users","disbursed_value_cr",...Array.from({ length: 36 }, (_, idx) => `m${idx+1}`)].map((h) => (
+                        <Th key={h} theme={theme}>{h}</Th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {creditQualityRows.map((row, ri) => (
+                      <tr key={`${row.disbursement_month || "row"}-${ri}`}>
+                        <Td theme={theme} bold>{row.disbursement_month}</Td>
+                        <Td theme={theme}>{row.loans.toLocaleString()}</Td>
+                        <Td theme={theme}>{row.users.toLocaleString()}</Td>
+                        <Td theme={theme}>{row.disbursed_value_cr.toFixed(2)}</Td>
+                        {Array.from({ length: 36 }, (_, mi) => row.m?.[mi]).map((value, mi) => (
+                          <Td key={mi} theme={theme}>{value || value === 0 ? Number(value).toFixed(2) : ""}</Td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Panel>
+
+            
 
             <Panel title="DPD Summary" subtitle="App score-wise default percentages" theme={theme} style={{ marginTop: 16 }}>
               <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
@@ -1345,41 +1384,7 @@ export default function App() {
               </Panel>
             ))}
 
-            <Panel title="POS Bucket Split" subtitle="Month-wise current POS and DPD bucket distribution" theme={theme} style={{ marginTop: 16 }}>
-              <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1600 }}>
-                  <thead>
-                    <tr>
-                      <Th theme={theme} style={{ position: "sticky", left: 0, zIndex: 2 }}>Metric</Th>
-                      {monthOrder.map(m => <Th key={m} theme={theme}>{m}</Th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { label: "Current POS", key: "currentPOS" },
-                      { label: "POS — No DPD (Current Bucket)", key: "currentBucket" },
-                      { label: "POS — DPD 1-30 (Bucket X)", key: "bucketX" },
-                      { label: "POS — DPD 31-60 (Bucket 1)", key: "bucket1" },
-                      { label: "POS — DPD 61-90 (Bucket 2)", key: "bucket2" },
-                      { label: "POS — DPD 90+ (Bucket 3)", key: "bucket3" },
-                    ].map((metric) => (
-                      <tr key={metric.key}>
-                        <Td theme={theme} bold style={{ position: "sticky", left: 0, background: theme.card, zIndex: 1 }}>{metric.label}</Td>
-                        {posByMonth.map((row, i) => (
-                          <Td key={`${metric.key}-${monthOrder[i]}`} theme={theme} style={{ textAlign: "center" }}>
-                            {typeof row[metric.key] === "number"
-                              ? metric.key === "currentPOS"
-                                ? row[metric.key].toLocaleString()
-                                : `${((row[metric.key] / (row.currentPOS || 1)) * 100).toFixed(1)}%`
-                              : "—"}
-                          </Td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Panel>
+            
           </div>
         )}
 
@@ -1389,6 +1394,43 @@ export default function App() {
         {activeTab === 2 && pv.collections && (
           <div>
             {/* Collection Funnel */}
+
+
+            <Panel title="Collections Bucket Trend" subtitle="Bucket-wise month-on-month trend (%)" theme={theme} style={{ marginTop: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                {[
+                  { label: "Bucket X — DPD 1-30", key: "bucketX", color: theme.accent },
+                  { label: "Bucket 1 — DPD 31-60", key: "bucket1", color: theme.accent2 },
+                  { label: "Bucket 2 — DPD 61-90", key: "bucket2", color: "#FBBF24" },
+                  { label: "Bucket 3 — DPD 90+", key: "bucket3", color: "#EF4444" },
+                ].map((cfg, ci) => {
+                  const maxValue = Math.max(...collectionBucketTrendPct.map(r => r[cfg.key] || 0), 1);
+                  return (
+                    <div key={ci} style={{ background: theme.bg, border: `1px solid ${theme.border}`, borderRadius: 12, padding: "14px 14px 12px" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: cfg.color, marginBottom: 10 }}>{cfg.label}</div>
+                      <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 210 }}>
+                        {collectionBucketTrendPct.map((row, i) => {
+                          const pct = row[cfg.key] || 0;
+                          const h = Math.max(8, (pct / maxValue) * 170);
+                          return (
+                            <div key={`${cfg.key}-${i}`} style={{ flex: 1, minWidth: 28, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                              <div style={{ fontSize: 8, color: theme.subtext, marginBottom: 3 }}>{pct.toFixed(1)}%</div>
+                              <div title={`${row.month}: ${pct.toFixed(1)}%`} style={{
+                                width: "80%", height: h,
+                                background: `linear-gradient(180deg, ${cfg.color}, ${cfg.color}66)`,
+                                borderRadius: "5px 5px 2px 2px",
+                              }} />
+                              <div style={{ fontSize: 10, color: theme.subtext, marginTop: 5 }}>{row.month}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
+
             <Panel title="Collection Funnel" subtitle="5 monthly column charts across key funnel stages" theme={theme}>
               {(() => {
                 const monthlyFunnel = collectionsMonthlyRows.map((row) => {
@@ -1442,41 +1484,7 @@ export default function App() {
             </Panel>
 
             {/* Bucket Trends */}
-            <Panel title="Collections Bucket Trend" subtitle="Bucket-wise month-on-month trend (%)" theme={theme} style={{ marginTop: 16 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                {[
-                  { label: "Bucket X — DPD 1-30", key: "bucketX", color: theme.accent },
-                  { label: "Bucket 1 — DPD 31-60", key: "bucket1", color: theme.accent2 },
-                  { label: "Bucket 2 — DPD 61-90", key: "bucket2", color: "#FBBF24" },
-                  { label: "Bucket 3 — DPD 90+", key: "bucket3", color: "#EF4444" },
-                ].map((cfg, ci) => {
-                  const maxValue = Math.max(...collectionBucketTrendPct.map(r => r[cfg.key] || 0), 1);
-                  return (
-                    <div key={ci} style={{ background: theme.bg, border: `1px solid ${theme.border}`, borderRadius: 12, padding: "14px 14px 12px" }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: cfg.color, marginBottom: 10 }}>{cfg.label}</div>
-                      <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 210 }}>
-                        {collectionBucketTrendPct.map((row, i) => {
-                          const pct = row[cfg.key] || 0;
-                          const h = Math.max(8, (pct / maxValue) * 170);
-                          return (
-                            <div key={`${cfg.key}-${i}`} style={{ flex: 1, minWidth: 28, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                              <div style={{ fontSize: 8, color: theme.subtext, marginBottom: 3 }}>{pct.toFixed(1)}%</div>
-                              <div title={`${row.month}: ${pct.toFixed(1)}%`} style={{
-                                width: "80%", height: h,
-                                background: `linear-gradient(180deg, ${cfg.color}, ${cfg.color}66)`,
-                                borderRadius: "5px 5px 2px 2px",
-                              }} />
-                              <div style={{ fontSize: 10, color: theme.subtext, marginTop: 5 }}>{row.month}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Panel>
-
+           
             {/* Collections Table */}
             <Panel title="Collections Month-wise Table" subtitle="Metrics vs Months" theme={theme} style={{ marginTop: 16 }}>
               <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
