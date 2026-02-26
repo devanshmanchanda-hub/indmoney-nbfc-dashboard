@@ -1507,45 +1507,6 @@ export default function App() {
               </Panel>
             ))}
 
-
-
-
-            {/* Rollback/Rollforward Tables */}
-            {[
-              { title: "Rollback / Rollforward — No DPD", rows: ROLLBACK_ROLLFORWARD_NO_DPD_ROWS },
-              { title: "Rollback / Rollforward — DPD 1-30", rows: ROLLBACK_ROLLFORWARD_DPD_1_30_ROWS },
-            ].map(({ title, rows }) => (
-              <Panel key={title} title={title} subtitle="Reference table from shared snapshot" theme={theme} style={{ marginTop: 16 }}>
-                <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1200 }}>
-                    <thead>
-                      <tr>
-                        <Th theme={theme} style={{ width: 40 }}>#</Th>
-                        <Th theme={theme} style={{ minWidth: 190 }}>Status</Th>
-                        {COLLECTIONS_SUMMARY_MONTHS.map(month => (
-                          <Th key={month.label} theme={theme} style={{ minWidth: 118 }}>
-                            {month.label}<div style={{ fontSize: 9, fontWeight: 400, marginTop: 2, color: theme.subtext, textTransform: "none", letterSpacing: "normal" }}>{month.date}</div>
-                          </Th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map((row) => (
-                        <tr key={row.srNo}>
-                          <Td theme={theme}>{row.srNo}</Td>
-                          <Td theme={theme} bold>{row.label}</Td>
-                          {row.values.map((value, idx) => (
-                            <Td key={`${row.srNo}-${idx}`} theme={theme}>{value}</Td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Panel>
-            ))}
-          </div>
-        )}
 <Panel title="Collection Funnel" subtitle="5 monthly column charts across key funnel stages" theme={theme}>
               {(() => {
                 const monthlyFunnel = collectionsMonthlyRows.map((row) => {
@@ -1598,6 +1559,45 @@ export default function App() {
               })()}
             </Panel>
 
+
+
+
+            {/* Rollback/Rollforward Tables */}
+            {[
+              { title: "Rollback / Rollforward — No DPD", rows: ROLLBACK_ROLLFORWARD_NO_DPD_ROWS },
+              { title: "Rollback / Rollforward — DPD 1-30", rows: ROLLBACK_ROLLFORWARD_DPD_1_30_ROWS },
+            ].map(({ title, rows }) => (
+              <Panel key={title} title={title} subtitle="Reference table from shared snapshot" theme={theme} style={{ marginTop: 16 }}>
+                <div style={{ overflowX: "auto", borderRadius: 10, border: `1px solid ${theme.border}` }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 1200 }}>
+                    <thead>
+                      <tr>
+                        <Th theme={theme} style={{ width: 40 }}>#</Th>
+                        <Th theme={theme} style={{ minWidth: 190 }}>Status</Th>
+                        {COLLECTIONS_SUMMARY_MONTHS.map(month => (
+                          <Th key={month.label} theme={theme} style={{ minWidth: 118 }}>
+                            {month.label}<div style={{ fontSize: 9, fontWeight: 400, marginTop: 2, color: theme.subtext, textTransform: "none", letterSpacing: "normal" }}>{month.date}</div>
+                          </Th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((row) => (
+                        <tr key={row.srNo}>
+                          <Td theme={theme}>{row.srNo}</Td>
+                          <Td theme={theme} bold>{row.label}</Td>
+                          {row.values.map((value, idx) => (
+                            <Td key={`${row.srNo}-${idx}`} theme={theme}>{value}</Td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Panel>
+            ))}
+          </div>
+        )}
 
         {/* ════════════════════════════════════════
             TAB 3 — DUE DATE MONITORING
