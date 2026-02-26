@@ -269,6 +269,12 @@ const DEFAULT_DATA = {
     { disbursement_month: "2023-04-01", loans: 3920, users: 3026, disbursed_value_cr: 44.25, disbursed_value: 442488748, m: buildVintageCurve(0.38, 0.14) },
     { disbursement_month: "2023-05-01", loans: 4779, users: 3643, disbursed_value_cr: 48.22, disbursed_value: 482211575, m: buildVintageCurve(0.23, 0.145) },
     { disbursement_month: "2023-06-01", loans: 5893, users: 4415, disbursed_value_cr: 54.14, disbursed_value: 541359728, m: buildVintageCurve(0.21, 0.14) },
+    { disbursement_month: "2023-07-01", loans: 6328, users: 4712, disbursed_value_cr: 59.31, disbursed_value: 593102341, m: buildVintageCurve(0.27, 0.138) },
+    { disbursement_month: "2023-08-01", loans: 6815, users: 5088, disbursed_value_cr: 63.87, disbursed_value: 638687552, m: buildVintageCurve(0.31, 0.136) },
+    { disbursement_month: "2023-09-01", loans: 7244, users: 5380, disbursed_value_cr: 67.42, disbursed_value: 674237980, m: buildVintageCurve(0.34, 0.134) },
+    { disbursement_month: "2023-10-01", loans: 7692, users: 5701, disbursed_value_cr: 71.08, disbursed_value: 710814409, m: buildVintageCurve(0.39, 0.132) },
+    { disbursement_month: "2023-11-01", loans: 8019, users: 5944, disbursed_value_cr: 75.66, disbursed_value: 756621733, m: buildVintageCurve(0.42, 0.13) },
+    { disbursement_month: "2023-12-01", loans: 8457, users: 6268, disbursed_value_cr: 80.21, disbursed_value: 802126115, m: buildVintageCurve(0.46, 0.128) },
   ],
   creditQualitySummaryMonthly: [
     { month: "Jan", disbursalAmount: 750, femi: 9.0, firstEmi30Plus: 4.8, nonStarterPct: 2.3 },
@@ -1531,17 +1537,25 @@ export default function App() {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14 }}>
                     {charts.map((chart) => {
                       const maxValue = Math.max(...monthlyFunnel.map(r => r[chart.key] || 0), 1);
+                      const isPercentageChart = chart.key !== "totalDemand";
                       return (
                         <div key={chart.key} style={{ background: theme.bg, border: `1px solid ${theme.border}`, borderRadius: 12, padding: "14px 14px 12px" }}>
                           <div style={{ fontSize: 12, fontWeight: 700, color: chart.color, marginBottom: 12 }}>{chart.label}</div>
                           <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 220 }}>
                             {monthlyFunnel.map((row, i) => {
                               const value = row[chart.key] || 0;
+                              const percentageValue = row.totalDemand > 0 ? (value / row.totalDemand) * 100 : 0;
                               const height = Math.max(8, (value / maxValue) * 175);
+                              const displayValue = isPercentageChart
+                                ? `${percentageValue.toFixed(1)}%`
+                                : `${Math.round(value / 1000 * 10) / 10}k`;
+                              const tooltipValue = isPercentageChart
+                                ? `${percentageValue.toFixed(1)}%`
+                                : Math.round(value).toLocaleString();
                               return (
                                 <div key={`${chart.key}-${i}`} style={{ flex: 1, minWidth: 20, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                  <div style={{ fontSize: 11, color: theme.text, marginBottom: 4, fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(value / 1000 * 10) / 10}k</div>
-                                  <div title={`${row.month}: ${Math.round(value).toLocaleString()}`} style={{
+                                  <div style={{ fontSize: 11, color: theme.text, marginBottom: 4, fontFamily: "'JetBrains Mono', monospace" }}>{displayValue}</div>
+                                  <div title={`${row.month}: ${tooltipValue}`} style={{
                                     width: "78%", height,
                                     background: `linear-gradient(180deg, ${chart.color}, ${chart.color}77)`,
                                     borderRadius: "5px 5px 2px 2px",
