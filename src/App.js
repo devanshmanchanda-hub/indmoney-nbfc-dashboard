@@ -116,7 +116,7 @@ const DpdAgingView = ({ title, subtitle, rows, valueFormatter, theme }) => (
 
 // ─── DEFAULT DATA ────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
-  meta: { companyName: "INDmoney NBFC Ltd", reportDate: "Feb 2026" },
+  meta: { companyName: "Instacash LSP Dashboard", reportDate: "Feb 2026" },
   portfolio: {
     totalAUM: 4820.5, totalAUMGrowth: 18.4,
     disbursed: 1240.2, disbursedGrowth: 22.1,
@@ -398,7 +398,7 @@ const DEFAULT_DATA = {
   selectedLender: "ALL",
 };
 
-const LS_DATA_KEY = "nbfc_dashboard_data_v5";
+const LS_DATA_KEY = "nbfc_dashboard_data_v9";
 const LS_THEME_KEY = "nbfc_dashboard_theme_v2";
 
 function lsGet(key) {
@@ -1431,58 +1431,7 @@ export default function App() {
               </div>
             </Panel>
 
-            <Panel title="Collection Funnel" subtitle="5 monthly column charts across key funnel stages" theme={theme}>
-              {(() => {
-                const monthlyFunnel = collectionsMonthlyRows.map((row) => {
-                  const totalDemand = Math.max(0, row.currentPOS || 0);
-                  const contactable = Math.max(0, Math.min(totalDemand, totalDemand * (row.contactability || 0) / 100));
-                  const ptpReceived = Math.max(0, Math.min(totalDemand, contactable * (data.collections.ptp || 0) / 100));
-                  const ptpHonored = Math.max(0, Math.min(totalDemand, ptpReceived * (data.collections.ptpHonored || 0) / 100));
-                  const finallyCollectedPct = Math.max(0, Math.min(100, (row.contactability || 0) - (row.femi || 0) * 1.35));
-                  const finallyCollected = Math.max(0, Math.min(totalDemand, totalDemand * finallyCollectedPct / 100));
-                  return { month: row.month, totalDemand, contactable, ptpReceived, ptpHonored, finallyCollected };
-                });
-
-                const charts = [
-                  { label: "Total Demand", key: "totalDemand", color: theme.accent2 },
-                  { label: "Contactable", key: "contactable", color: "#FBBF24" },
-                  { label: "PTP Received", key: "ptpReceived", color: "#A78BFA" },
-                  { label: "PTP Honored", key: "ptpHonored", color: "#F97316" },
-                  { label: "Finally Collected", key: "finallyCollected", color: theme.accent },
-                ];
-
-                return (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14 }}>
-                    {charts.map((chart) => {
-                      const maxValue = Math.max(...monthlyFunnel.map(r => r[chart.key] || 0), 1);
-                      return (
-                        <div key={chart.key} style={{ background: theme.bg, border: `1px solid ${theme.border}`, borderRadius: 12, padding: "14px 14px 12px" }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: chart.color, marginBottom: 12 }}>{chart.label}</div>
-                          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 220 }}>
-                            {monthlyFunnel.map((row, i) => {
-                              const value = row[chart.key] || 0;
-                              const height = Math.max(8, (value / maxValue) * 175);
-                              return (
-                                <div key={`${chart.key}-${i}`} style={{ flex: 1, minWidth: 20, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                  <div style={{ fontSize: 11, color: theme.text, marginBottom: 4, fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(value / 1000 * 10) / 10}k</div>
-                                  <div title={`${row.month}: ${Math.round(value).toLocaleString()}`} style={{
-                                    width: "78%", height,
-                                    background: `linear-gradient(180deg, ${chart.color}, ${chart.color}77)`,
-                                    borderRadius: "5px 5px 2px 2px",
-                                  }} />
-                                  <div style={{ fontSize: 10, color: theme.subtext, marginTop: 5 }}>{row.month}</div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </Panel>
-
+            
             {/* Bucket Trends */}
            
             {/* Collections Table */}
@@ -1558,6 +1507,9 @@ export default function App() {
               </Panel>
             ))}
 
+
+
+
             {/* Rollback/Rollforward Tables */}
             {[
               { title: "Rollback / Rollforward — No DPD", rows: ROLLBACK_ROLLFORWARD_NO_DPD_ROWS },
@@ -1594,6 +1546,58 @@ export default function App() {
             ))}
           </div>
         )}
+<Panel title="Collection Funnel" subtitle="5 monthly column charts across key funnel stages" theme={theme}>
+              {(() => {
+                const monthlyFunnel = collectionsMonthlyRows.map((row) => {
+                  const totalDemand = Math.max(0, row.currentPOS || 0);
+                  const contactable = Math.max(0, Math.min(totalDemand, totalDemand * (row.contactability || 0) / 100));
+                  const ptpReceived = Math.max(0, Math.min(totalDemand, contactable * (data.collections.ptp || 0) / 100));
+                  const ptpHonored = Math.max(0, Math.min(totalDemand, ptpReceived * (data.collections.ptpHonored || 0) / 100));
+                  const finallyCollectedPct = Math.max(0, Math.min(100, (row.contactability || 0) - (row.femi || 0) * 1.35));
+                  const finallyCollected = Math.max(0, Math.min(totalDemand, totalDemand * finallyCollectedPct / 100));
+                  return { month: row.month, totalDemand, contactable, ptpReceived, ptpHonored, finallyCollected };
+                });
+
+                const charts = [
+                  { label: "Total overdue users", key: "totalDemand", color: theme.accent2 },
+                  { label: "Contactable", key: "contactable", color: "#FBBF24" },
+                  { label: "PTP Received", key: "ptpReceived", color: "#A78BFA" },
+                  { label: "PTP Honored", key: "ptpHonored", color: "#F97316" },
+                  { label: "Finally Collected", key: "finallyCollected", color: theme.accent },
+                ];
+
+                return (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14 }}>
+                    {charts.map((chart) => {
+                      const maxValue = Math.max(...monthlyFunnel.map(r => r[chart.key] || 0), 1);
+                      return (
+                        <div key={chart.key} style={{ background: theme.bg, border: `1px solid ${theme.border}`, borderRadius: 12, padding: "14px 14px 12px" }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: chart.color, marginBottom: 12 }}>{chart.label}</div>
+                          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 220 }}>
+                            {monthlyFunnel.map((row, i) => {
+                              const value = row[chart.key] || 0;
+                              const height = Math.max(8, (value / maxValue) * 175);
+                              return (
+                                <div key={`${chart.key}-${i}`} style={{ flex: 1, minWidth: 20, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                  <div style={{ fontSize: 11, color: theme.text, marginBottom: 4, fontFamily: "'JetBrains Mono', monospace" }}>{Math.round(value / 1000 * 10) / 10}k</div>
+                                  <div title={`${row.month}: ${Math.round(value).toLocaleString()}`} style={{
+                                    width: "78%", height,
+                                    background: `linear-gradient(180deg, ${chart.color}, ${chart.color}77)`,
+                                    borderRadius: "5px 5px 2px 2px",
+                                  }} />
+                                  <div style={{ fontSize: 10, color: theme.subtext, marginTop: 5 }}>{row.month}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </Panel>
+
 
         {/* ════════════════════════════════════════
             TAB 3 — DUE DATE MONITORING
